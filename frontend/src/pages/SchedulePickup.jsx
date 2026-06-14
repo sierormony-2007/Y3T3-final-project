@@ -1,24 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../component/Header.jsx'
-
-const CATEGORIES = [
-  'Laptop / Computer',
-  'Smartphone / Tablet',
-  'Printer / Scanner',
-  'TV / Monitor',
-  'Kitchen Appliance',
-  'Other Electronics',
-];
-
-const TIME_SLOTS = [
-  '08:00 – 10:00',
-  '10:00 – 12:00',
-  '12:00 – 14:00',
-  '13:00 – 15:00',
-  '15:00 – 17:00',
-  '17:00 – 19:00',
-];
+import {
+  DEVICE_CATEGORIES,
+  TIME_SLOTS
+} from "../data/data";
 
 const today = new Date().toISOString().split('T')[0];
 
@@ -43,6 +29,33 @@ export default function SchedulePickup() {
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+  const savePickup = () => {
+    if (!currentUser?.id) return;
+
+    const pickups = JSON.parse(localStorage.getItem('pickups')) || [];
+
+    pickups.push({
+      id: Date.now(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      category: form.category,
+      description: form.description,
+      itemCount: form.itemCount,
+      weight: form.weight,
+      date: form.date,
+      timeSlot: form.timeSlot,
+      street: form.street,
+      city: form.city,
+      postal: form.postal,
+      notes: form.notes,
+      status: 'pending',
+    });
+
+    localStorage.setItem('pickups', JSON.stringify(pickups));
+  };
+
   const estimatedPts = form.weight ? Math.round(parseFloat(form.weight) * 40) : null;
 
   const validate = () => {
@@ -58,6 +71,7 @@ export default function SchedulePickup() {
 
   const handleSubmit = () => {
     if (!validate()) return;
+    savePickup();
     setSubmitted(true);
     setTimeout(() => navigate('/dashboard'), 2000);
   };
@@ -74,6 +88,10 @@ export default function SchedulePickup() {
               Your {form.category} pickup is confirmed for {form.date}, {form.timeSlot}.
               Redirecting to dashboard…
             </div>
+
+            <button onClick={submitPickup}>
+              Request Pickup
+            </button>
           </div>
         </div>
       </div>
@@ -104,7 +122,7 @@ export default function SchedulePickup() {
                 onChange={e => set('category', e.target.value)}
               >
                 <option value="">Select device category</option>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {DEVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
               {errors.category && <div style={{ color:'var(--badge-orange)', fontSize:11, marginTop:4 }}>{errors.category}</div>}
             </div>

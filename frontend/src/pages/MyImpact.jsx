@@ -1,26 +1,5 @@
 import Header from '../component/Header.jsx'
-
-const MONTHLY = [
-  { month:'Jan', pct:20 },
-  { month:'Feb', pct:35 },
-  { month:'Mar', pct:10 },
-  { month:'Apr', pct:50 },
-  { month:'May', pct:100, highlight:true },
-  { month:'Jun', pct:60 },
-];
-
-const DEVICES = [
-  { icon:'💻', name:'Laptop / Computer',   kg:8.4,  pct:31 },
-  { icon:'🖨', name:'Printer / Scanner',   kg:7.5,  pct:28 },
-  { icon:'📱', name:'Smartphone / Tablet', kg:2.6,  pct:10 },
-];
-
-const ACHIEVEMENTS = [
-  { icon:'🥇', name:'First Pickup',  sub:'Completed',      locked:false },
-  { icon:'⭐', name:'Gold Member',   sub:'1,000+ pts',     locked:false },
-  { icon:'🌳', name:'50 kg Club',    sub:'26.9 / 50 kg',   locked:false },
-  { icon:'💎', name:'Platinum',      sub:'2,000 pts needed',locked:true },
-];
+import { DEVICES, MONTHLY, ACHIEVEMENTS } from '../data/data.js';
 
 function StatCard({ icon, value, label, sub, pct, goal }) {
   return (

@@ -1,26 +1,49 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { USERS } from "../data/data";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = e =>
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) =>
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
 
   const handleSubmit = async () => {
-    setError('');
-    if (!form.email || !form.password) {
-      setError('Please fill in both fields.');
+    const users =
+      JSON.parse(localStorage.getItem("users")) || USERS;
+
+    const user = users.find(
+      (u) =>
+        u.email === form.email &&
+        u.password === form.password
+    );
+
+    if (!user) {
+      setError("Invalid email or password");
       return;
     }
-    setLoading(true);
-    // Simulate auth delay
-    await new Promise(r => setTimeout(r, 800));
-    setLoading(false);
-    navigate('/dashboard');
+
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(user)
+    );
+
+    if (user.role === "staff") {
+      navigate("/staff");
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   return (

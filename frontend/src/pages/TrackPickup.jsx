@@ -1,65 +1,6 @@
 import { useState } from 'react';
 import Header from '../component/Header.jsx'
-
-const STEPS = ['Pending', 'Scheduled', 'Picked Up', 'Processing', 'Recycled ✓'];
-const STEP_ICONS = ['⏱', '📅', '🚛', '⚙️', '✅'];
-
-const PICKUPS = [
-  {
-    id: 'PU-1001',
-    name: 'Laptop / Computer',
-    status: 'recycled',
-    weight: 8.4,
-    items: 2,
-    date: '2026-05-14',
-    time: '10:00–12:00',
-    address: '12 Green Ln, Eco City, 10001',
-    stepDone: 5,          // all steps done
-    pts: 336,
-    icon: '✅',
-    iconClass: 'green',
-  },
-  {
-    id: 'PU-1002',
-    name: 'Smartphone / Tablet',
-    status: 'processing',
-    weight: 2.6,
-    items: 5,
-    date: '2026-06-02',
-    time: '13:00–15:00',
-    address: '12 Green Ln, Eco City, 10001',
-    stepDone: 3,
-    pts: null,
-    icon: '⚙️',
-    iconClass: 'orange',
-  },
-  {
-    id: 'PU-1003',
-    name: 'Printer / Scanner',
-    status: 'pending',
-    weight: 7.5,
-    items: 1,
-    date: '2026-06-20',
-    time: '08:00–10:00',
-    address: '12 Green Ln, Eco City, 10001',
-    stepDone: 0,
-    pts: null,
-    icon: '⏱',
-    iconClass: 'yellow',
-  },
-];
-
-const STATUS_BADGE = {
-  recycled:   'badge badge-recycled',
-  processing: 'badge badge-processing',
-  pending:    'badge badge-pending',
-};
-
-const STATUS_LABEL = {
-  recycled:   'Recycled ✓',
-  processing: 'Processing',
-  pending:    'Pending',
-};
+import { PICKUPS, STEPS, STEP_ICONS, STATUS_BADGE, STATUS_LABEL } from '../data/data.js';
 
 function Stepper({ stepDone }) {
   return (

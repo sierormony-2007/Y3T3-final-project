@@ -7,6 +7,7 @@ import TrackPickups   from './pages/TrackPickup.jsx'
 import RewardsStore   from './pages/RewardsStore.jsx'
 import MyImpact       from './pages/MyImpact.jsx'
 import SchedulePickup from './pages/SchedulePickup.jsx'
+import StaffDashboard from './pages/StaffDashboard.jsx'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/rewards"   element={<RewardsStore />} />
         <Route path="/impact"    element={<MyImpact />} />
         <Route path="/schedule"  element={<SchedulePickup />} />
+        <Route path="/staff" element={<StaffDashboard />}/>
         <Route path="*"          element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

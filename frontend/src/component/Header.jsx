@@ -1,10 +1,11 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard',    icon: '⊞', path: '/dashboard' },
-  { id: 'track',     label: 'Track Pickups', icon: '🚛', path: '/track'     },
-  { id: 'rewards',   label: 'Rewards Store', icon: '🛍', path: '/rewards'   },
-  { id: 'impact',    label: 'My Impact',     icon: '📈', path: '/impact'    },
+  { id: 'dashboard', label: 'Dashboard',      icon: '⊞', path: '/dashboard' },
+  { id: 'track',     label: 'Track Pickups',  icon: '🚛', path: '/track'     },
+  { id: 'rewards',   label: 'Rewards Store',  icon: '🛍', path: '/rewards'   },
+  { id: 'impact',    label: 'My Impact',      icon: '📈', path: '/impact'    },
+  { id: 'schedule',  label: 'Schedule Pickup', icon: '🗓', path: '/schedule'  },
 ];
 
 export default function Header({ user = { name: 'Alice Chen', pts: 1240 } }) {
