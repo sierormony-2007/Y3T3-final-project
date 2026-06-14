@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../component/Header.jsx'
+import { ACTIVE_PICKUPS,RECENT_ACTIVITY, USERS } from "../data/data";
 
-const ACTIVE_PICKUPS = [
-  { id: 'PU-1002', name: 'Smartphone / Tablet', weight: 2.6, date: '2026-06-02', status: 'processing', icon: '⚙️', iconClass: 'orange' },
-  { id: 'PU-1003', name: 'Printer / Scanner',   weight: 7.5, date: '2026-06-20', status: 'pending',    icon: '⏱',  iconClass: 'yellow' },
-];
+const currentUser =
+  JSON.parse(localStorage.getItem("currentUser"));
 
-const RECENT_ACTIVITY = [
-  { text: 'Printer / Scanner · 7.5 kg',           date: '6/10/2026', color: 'dot-orange' },
-  { text: 'Smartphone / Tablet · 2.6 kg',          date: '5/28/2026', color: 'dot-orange' },
-  { text: 'Laptop / Computer · 8.4 kg — Recycled ✓', date: '5/14/2026', color: 'dot-green' },
-];
+const users =
+  JSON.parse(localStorage.getItem("users")) || [];
+
+const user = users.find(
+  (u) => u.id === currentUser?.id
+);
 
 function statusBadge(status) {
   const map = {
@@ -34,13 +34,13 @@ export default function Dashboard() {
         {/* Welcome card */}
         <div className="card-lg">
           <div className="welcome-banner">
-            <div>
-              <div className="welcome-hello">Welcome back</div>
-              <div className="welcome-name">Alice Chen</div>
-              <span className="badge badge-gold" style={{ marginTop: 8, display: 'inline-block' }}>
-                Gold Member
-              </span>
-            </div>
+            <h1>
+            Welcome {currentUser?.name}
+          </h1>
+
+          <h3>
+            Points: {user?.points || 0}
+          </h3>
             <button className="btn-request" style={{ width: 'auto', padding: '12px 20px', fontSize: 14 }}
               onClick={() => navigate('/schedule')}>
               + Request Pickup
