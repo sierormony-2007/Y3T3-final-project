@@ -1,152 +1,98 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { USERS } from "../data/data";
+import { api } from '../services/api';
 
 export default function Login() {
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [error, setError] = useState("");
+  const [tab, setTab] = useState('login'); // 'login' | 'register'
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
-    setForm((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async () => {
-    const users =
-      JSON.parse(localStorage.getItem("users")) || USERS;
-
-    const user = users.find(
-      (u) =>
-        u.email === form.email &&
-        u.password === form.password
-    );
-
-    if (!user) {
-      setError("Invalid email or password");
-      return;
-    }
-
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(user)
-    );
-
-    if (user.role === "staff") {
-      navigate("/staff");
-    } else {
-      navigate("/dashboard");
+    setError('');
+    setLoading(true);
+    try {
+      let data;
+      if (tab === 'login') {
+        data = await api.auth.login({ email: form.email, password: form.password });
+      } else {
+        if (!form.name) { setError('Name is required'); setLoading(false); return; }
+        data = await api.auth.register({ name: form.name, email: form.email, password: form.password });
+      }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      navigate(data.user.role === 'staff' ? '/staff' : '/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-shell">
       <div className="login-card">
-        {/* Logo */}
         <div className="login-logo">
           <div className="logo-icon">♻️</div>
           EcoRecycle
         </div>
 
-        <div className="login-title">Welcome back</div>
-        <div className="login-sub">Sign in to track your e-waste impact</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {['login', 'register'].map(t => (
+            <button key={t} onClick={() => { setTab(t); setError(''); }}
+              style={{
+                flex: 1, padding: '10px', borderRadius: 'var(--radius-md)',
+                border: tab === t ? '1px solid var(--green-primary)' : '1px solid var(--border)',
+                background: tab === t ? 'var(--green-glow)' : 'var(--bg-panel)',
+                color: tab === t ? 'var(--green-bright)' : 'var(--text-secondary)',
+                cursor: 'pointer', fontWeight: 600, fontSize: 13,
+              }}>
+              {t === 'login' ? 'Sign In' : 'Register'}
+            </button>
+          ))}
+        </div>
+
+        <div className="login-title">{tab === 'login' ? 'Welcome back' : 'Create account'}</div>
+        <div className="login-sub">{tab === 'login' ? 'Sign in to track your e-waste impact' : 'Join EcoRecycle and start making a difference'}</div>
 
         {error && (
-          <div style={{
-            background: 'rgba(234,88,12,0.15)',
-            border: '1px solid var(--badge-orange)',
-            borderRadius: 'var(--radius-md)',
-            padding: '10px 14px',
-            color: 'var(--badge-orange)',
-            fontSize: '13px',
-            marginBottom: '16px',
-          }}>
+          <div style={{ background: 'rgba(234,88,12,0.15)', border: '1px solid var(--badge-orange)', borderRadius: 'var(--radius-md)', padding: '10px 14px', color: 'var(--badge-orange)', fontSize: 13, marginBottom: 16 }}>
             {error}
+          </div>
+        )}
+
+        {tab === 'register' && (
+          <div className="form-group">
+            <label className="form-label">Full Name</label>
+            <input className="form-input" type="text" name="name" placeholder="Your name"
+              value={form.name} onChange={handleChange} onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
           </div>
         )}
 
         <div className="form-group">
           <label className="form-label">Email address</label>
-          <input
-            className="form-input"
-            type="email"
-            name="email"
-            placeholder="alice@example.com"
-            value={form.email}
-            onChange={handleChange}
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          />
+          <input className="form-input" type="email" name="email" placeholder="you@example.com"
+            value={form.email} onChange={handleChange} onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
         </div>
 
         <div className="form-group">
           <label className="form-label">Password</label>
-          <input
-            className="form-input"
-            type="password"
-            name="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={handleChange}
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          />
+          <input className="form-input" type="password" name="password" placeholder="••••••••"
+            value={form.password} onChange={handleChange} onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
         </div>
 
-        <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:'20px' }}>
-          <span style={{ fontSize:'12px', color:'var(--green-bright)', cursor:'pointer' }}>
-            Forgot password?
-          </span>
-        </div>
-
-        <button
-          className="btn-submit"
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{ marginTop: 0 }}
-        >
-          {loading ? 'Signing in…' : 'Sign In'}
+        <button className="btn-submit" onClick={handleSubmit} disabled={loading} style={{ marginTop: 8 }}>
+          {loading ? 'Please wait…' : tab === 'login' ? 'Sign In' : 'Create Account'}
         </button>
 
-        <div style={{ textAlign:'center', fontSize:'12px', color:'var(--text-secondary)', marginTop:'20px' }}>
-          Don't have an account?{' '}
-          <span style={{ color:'var(--green-bright)', cursor:'pointer' }}>Create one free</span>
-        </div>
-
-        {/* Social login */}
-        <div style={{
-          marginTop:'28px',
-          paddingTop:'20px',
-          borderTop:'1px solid var(--border)',
-          textAlign:'center',
-        }}>
-          <div style={{ fontSize:'11px', color:'var(--text-secondary)', marginBottom:'14px' }}>
-            Or continue with
-          </div>
-          <div style={{ display:'flex', gap:'10px' }}>
-            {['🔵 Google', '⚫ Apple'].map(label => (
-              <button
-                key={label}
-                style={{
-                  flex: 1,
-                  background: 'var(--bg-panel)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-primary)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '10px',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-secondary)', marginTop: 16 }}>
+          {tab === 'login' ? "Don't have an account? " : 'Already have an account? '}
+          <span style={{ color: 'var(--green-bright)', cursor: 'pointer' }} onClick={() => setTab(tab === 'login' ? 'register' : 'login')}>
+            {tab === 'login' ? 'Create one free' : 'Sign in'}
+          </span>
         </div>
       </div>
     </div>
