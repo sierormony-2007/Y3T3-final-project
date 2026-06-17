@@ -9,18 +9,23 @@ import MyImpact       from './pages/MyImpact.jsx'
 import SchedulePickup from './pages/SchedulePickup.jsx'
 import StaffDashboard from './pages/StaffDashboard.jsx'
 
+function PrivateRoute({ children }) {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/"          element={<Navigate to="/login" replace />} />
         <Route path="/login"     element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/track"     element={<TrackPickups />} />
-        <Route path="/rewards"   element={<RewardsStore />} />
-        <Route path="/impact"    element={<MyImpact />} />
-        <Route path="/schedule"  element={<SchedulePickup />} />
-        <Route path="/staff" element={<StaffDashboard />}/>
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/track"     element={<PrivateRoute><TrackPickups /></PrivateRoute>} />
+        <Route path="/rewards"   element={<PrivateRoute><RewardsStore /></PrivateRoute>} />
+        <Route path="/impact"    element={<PrivateRoute><MyImpact /></PrivateRoute>} />
+        <Route path="/schedule"  element={<PrivateRoute><SchedulePickup /></PrivateRoute>} />
+        <Route path="/staff"     element={<PrivateRoute><StaffDashboard /></PrivateRoute>} />
         <Route path="*"          element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
