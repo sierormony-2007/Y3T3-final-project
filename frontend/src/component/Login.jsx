@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState('login'); // 'login' | 'register'
+ const location = useLocation();
+
+const [tab, setTab] = useState(
+  location.state?.tab || 'login'
+);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
