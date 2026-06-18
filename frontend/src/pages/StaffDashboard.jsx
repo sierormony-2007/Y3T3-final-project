@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../component/Header.jsx';
 import { api } from '../services/api.js';
 
-const STATUS_LABELS = { pending:'Pending', accepted:'Accepted', processing:'Processing', recycled:'Recycled ✓' };
-const STATUS_CLASS  = { pending:'badge badge-pending', accepted:'badge badge-processing', processing:'badge badge-processing', recycled:'badge badge-recycled' };
-const NEXT_STATUS   = { pending:'accepted', accepted:'processing', processing:'recycled' };
-const ACTION_LABEL  = { pending:'Accept', accepted:'Process', processing:'Complete', recycled:'Done' };
+const STATUS_LABELS = { pending:'Pending', accepted:'Accepted', picked_up:'Picked Up', processing:'Processing', recycled:'Recycled ✓' };
+const STATUS_CLASS  = { pending:'badge badge-pending', accepted:'badge badge-processing', picked_up:'badge badge-processing', processing:'badge badge-processing', recycled:'badge badge-recycled' };
+const NEXT_STATUS   = { pending:'accepted', accepted:'picked_up', picked_up:'processing', processing:'recycled' };
+const ACTION_LABEL  = { pending:'Accept', accepted:'Mark Picked Up', picked_up:'Process', processing:'Complete', recycled:'Done' };
 
 export default function StaffDashboard() {
   const navigate  = useNavigate();
@@ -138,8 +138,8 @@ export default function StaffDashboard() {
           <div className="card" style={{ textAlign:'center', color:'var(--text-secondary)', padding:24 }}>No pickup requests available.</div>
         ) : orderedPickups.map(pickup => (
           <div key={pickup.id} className="pickup-row" style={{ cursor:'default' }}>
-            <div className={`pickup-icon ${pickup.status==='recycled'?'green':pickup.status==='processing'?'orange':'yellow'}`}>
-              {pickup.status==='recycled'?'✅':pickup.status==='processing'?'🛠':'🚚'}
+            <div className={`pickup-icon ${pickup.status==='recycled'?'green':pickup.status==='processing'?'orange':pickup.status==='picked_up'?'orange':'yellow'}`}>
+              {pickup.status==='recycled'?'✅':pickup.status==='processing'?'🛠':pickup.status==='picked_up'?'📦':'🚚'}
             </div>
             <div className="pickup-info" style={{ flex:1 }}>
               <div className="pickup-name">{pickup.userName} · {pickup.category}</div>
