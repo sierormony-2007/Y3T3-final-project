@@ -23,6 +23,14 @@
       "password": "$2a$08$ePrfC6ZEd.BAL9uwd1xj/.FBP8YRPzRC9EtB7kNrRL2eT6UVWi.tS",
       "role": "user",
       "points": 0
+    },
+    {
+      "id": 4,
+      "name": "kimsorngg",
+      "email": "kimm",
+      "password": "$2a$08$ykJgT.8VbovkwvNwSp5RVe9RXZa8rd1iXs9DlTPF5CjYu0sAYYvfC",
+      "role": "user",
+      "points": 0
     }
   ],
   "pickups": [
@@ -40,8 +48,25 @@
       "city": "PP",
       "postal": "001",
       "notes": "ring",
-      "status": "accepted",
+      "status": "recycled",
       "createdAt": "2026-06-17T04:12:55.604Z"
+    },
+    {
+      "id": 2,
+      "userId": 4,
+      "userName": "kimsorngg",
+      "category": "Laptop / Computer",
+      "description": "cracked",
+      "itemCount": 1,
+      "weight": 5,
+      "date": "2026-06-19",
+      "timeSlot": "10:00 – 12:00",
+      "street": "CCV",
+      "city": "PP",
+      "postal": "01",
+      "notes": "ring",
+      "status": "recycled",
+      "createdAt": "2026-06-18T05:41:10.652Z"
     }
   ],
   "rewards": [
