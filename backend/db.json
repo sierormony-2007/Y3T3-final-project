@@ -26,11 +26,19 @@
     },
     {
       "id": 4,
+<<<<<<< HEAD
       "name": "kimsorngg",
       "email": "kimm",
       "password": "$2a$08$ykJgT.8VbovkwvNwSp5RVe9RXZa8rd1iXs9DlTPF5CjYu0sAYYvfC",
       "role": "user",
       "points": 0
+=======
+      "name": "Rormony",
+      "email": "nii@gmail.com",
+      "password": "$2a$08$hNFA84SM/LkPPUyVWQYG.esyHtvYBNDOh1IwMsf9.Ljju1RFxDA6q",
+      "role": "user",
+      "points": 578
+>>>>>>> 6cb79f15d2a0617f98b248720623d9862f0e27d9
     }
   ],
   "pickups": [
@@ -48,12 +56,17 @@
       "city": "PP",
       "postal": "001",
       "notes": "ring",
+<<<<<<< HEAD
       "status": "recycled",
+=======
+      "status": "processing",
+>>>>>>> 6cb79f15d2a0617f98b248720623d9862f0e27d9
       "createdAt": "2026-06-17T04:12:55.604Z"
     },
     {
       "id": 2,
       "userId": 4,
+<<<<<<< HEAD
       "userName": "kimsorngg",
       "category": "Laptop / Computer",
       "description": "cracked",
@@ -67,6 +80,72 @@
       "notes": "ring",
       "status": "recycled",
       "createdAt": "2026-06-18T05:41:10.652Z"
+=======
+      "userName": "Rormony",
+      "category": "Laptop / Computer",
+      "description": "",
+      "itemCount": 2,
+      "weight": 5,
+      "date": "2026-06-19",
+      "timeSlot": "10:00 – 12:00",
+      "street": "12",
+      "city": "PP",
+      "postal": "1200",
+      "notes": "",
+      "status": "recycled",
+      "createdAt": "2026-06-18T06:05:38.246Z"
+    },
+    {
+      "id": 3,
+      "userId": 4,
+      "userName": "Rormony",
+      "category": "Smartphone / Tablet",
+      "description": "",
+      "itemCount": 4,
+      "weight": 5,
+      "date": "2026-06-19",
+      "timeSlot": "10:00 – 12:00",
+      "street": "12",
+      "city": "PP",
+      "postal": "1200",
+      "notes": "",
+      "status": "recycled",
+      "createdAt": "2026-06-18T07:44:20.967Z"
+    },
+    {
+      "id": 4,
+      "userId": 4,
+      "userName": "Rormony",
+      "category": "Laptop / Computer",
+      "description": "",
+      "itemCount": 2,
+      "weight": 5.8,
+      "date": "2026-06-19",
+      "timeSlot": "10:00 – 12:00",
+      "street": "12",
+      "city": "pp",
+      "postal": "12",
+      "notes": "",
+      "status": "recycled",
+      "createdAt": "2026-06-18T08:14:26.629Z"
+    },
+    {
+      "id": 5,
+      "userId": 4,
+      "userName": "Rormony",
+      "category": "Other Electronics",
+      "description": "",
+      "itemCount": 3,
+      "weight": 5,
+      "date": "2026-06-19",
+      "timeSlot": "10:00 – 12:00",
+      "street": "12",
+      "city": "pp",
+      "postal": "124",
+      "notes": "",
+      "status": "picked_up",
+      "createdAt": "2026-06-18T08:23:30.371Z"
+>>>>>>> 6cb79f15d2a0617f98b248720623d9862f0e27d9
     }
   ],
   "rewards": [
@@ -86,7 +165,7 @@
       "pts": 120,
       "cat": "Bags",
       "emoji": "👜",
-      "stock": 100
+      "stock": 99
     },
     {
       "id": 3,
@@ -143,7 +222,16 @@
       "stock": 40
     }
   ],
-  "redemptions": [],
+  "redemptions": [
+    {
+      "id": 1,
+      "userId": 4,
+      "rewardId": 2,
+      "rewardName": "Organic Cotton Tote Bag",
+      "pointsSpent": 120,
+      "redeemedAt": "2026-06-18T08:25:05.813Z"
+    }
+  ],
   "articles": [
     {
       "id": 1,
@@ -162,5 +250,33 @@
       "createdAt": "2026-02-15"
     }
   ],
-  "recyclingRecords": []
+  "recyclingRecords": [
+    {
+      "id": 1,
+      "pickupId": 4,
+      "userId": 4,
+      "category": "Laptop / Computer",
+      "weight": 5.8,
+      "pointsAwarded": 278,
+      "completedAt": "2026-06-18T08:16:24.812Z"
+    },
+    {
+      "id": 2,
+      "pickupId": 3,
+      "userId": 4,
+      "category": "Smartphone / Tablet",
+      "weight": 5,
+      "pointsAwarded": 220,
+      "completedAt": "2026-06-18T08:16:29.809Z"
+    },
+    {
+      "id": 3,
+      "pickupId": 5,
+      "userId": 4,
+      "category": "Other Electronics",
+      "weight": 5,
+      "pointsAwarded": 200,
+      "completedAt": "2026-06-18T08:24:07.045Z"
+    }
+  ]
 }

@@ -40,31 +40,100 @@ function getPickupById(id, userId, role) {
 }
 
 function updateStatus(id, status, actorRole) {
-  const VALID = ['pending', 'accepted', 'processing', 'recycled'];
-  if (!VALID.includes(status)) throw { status: 400, message: `Status must be one of: ${VALID.join(', ')}` };
+  const VALID = [
+    'pending',
+    'accepted',
+    'picked_up',
+    'processing',
+    'recycled'
+  ];
 
-  const pickup = db.get('pickups').find({ id: parseInt(id) }).value();
-  if (!pickup) throw { status: 404, message: 'Pickup not found' };
+  if (!VALID.includes(status)) {
+    throw {
+      status: 400,
+      message: `Status must be one of: ${VALID.join(', ')}`
+    };
+  }
 
-  db.get('pickups').find({ id: parseInt(id) }).assign({ status }).write();
+  const pickup = db.get('pickups')
+    .find({ id: parseInt(id) })
+    .value();
+
+  if (!pickup) {
+    throw {
+      status: 404,
+      message: 'Pickup not found'
+    };
+  }
+
+  // Save old status before update
+  const oldStatus = pickup.status;
+
+  // Update pickup status
+  db.get('pickups')
+    .find({ id: parseInt(id) })
+    .assign({ status })
+    .write();
+
   console.log(`🔄 STATUS: pickup #${id} → "${status}"`);
 
-  if (status === 'accepted' && pickup.status !== 'accepted') {
-    const pts = calculatePoints(pickup.weight, pickup.category);
-    const user = db.get('users').find({ id: pickup.userId }).value();
+  // Award points only once when pickup is picked up
+  if (status === 'picked_up' && oldStatus !== 'picked_up') {
+
+    const pts = calculatePoints(
+      pickup.weight,
+      pickup.category
+    );
+
+    const user = db.get('users')
+      .find({ id: pickup.userId })
+      .value();
+
     if (user) {
-      db.get('users').find({ id: pickup.userId }).assign({ points: (user.points || 0) + pts }).write();
-      const records = db.get('recyclingRecords').value();
-      const recId = records.length > 0 ? Math.max(...records.map(r => r.id)) + 1 : 1;
-      db.get('recyclingRecords').push({
-        id: recId, pickupId: pickup.id, userId: pickup.userId,
-        category: pickup.category, weight: pickup.weight,
-        pointsAwarded: pts, completedAt: new Date().toISOString(),
-      }).write();
+
+      // Update user points
+      db.get('users')
+        .find({ id: pickup.userId })
+        .assign({
+          points: (user.points || 0) + pts
+        })
+        .write();
+
+      // Avoid duplicate recycling records
+      const existingRecord = db.get('recyclingRecords')
+        .find({ pickupId: pickup.id })
+        .value();
+
+      if (!existingRecord) {
+
+        const records = db.get('recyclingRecords').value();
+
+        const recId = records.length > 0
+          ? Math.max(...records.map(r => r.id)) + 1
+          : 1;
+
+        db.get('recyclingRecords')
+          .push({
+            id: recId,
+            pickupId: pickup.id,
+            userId: pickup.userId,
+            category: pickup.category,
+            weight: pickup.weight,
+            pointsAwarded: pts,
+            completedAt: new Date().toISOString()
+          })
+          .write();
+
+        console.log(
+          `✅ Awarded ${pts} points to user ${pickup.userId}`
+        );
+      }
     }
   }
 
-  return db.get('pickups').find({ id: parseInt(id) }).value();
+  return db.get('pickups')
+    .find({ id: parseInt(id) })
+    .value();
 }
 
 function cancelPickup(id, userId, role) {
