@@ -31,6 +31,14 @@
       "password": "$2a$08$hNFA84SM/LkPPUyVWQYG.esyHtvYBNDOh1IwMsf9.Ljju1RFxDA6q",
       "role": "user",
       "points": 578
+    },
+    {
+      "id": 5,
+      "name": "mony",
+      "email": "nii18@gmail.com",
+      "password": "$2a$08$8eHlMGmEUfpQ9HfzTy0HN.gfkN4vkNlwtdwJU6RvPu8BYhrnrVrVK",
+      "role": "user",
+      "points": 336
     }
   ],
   "pickups": [
@@ -118,6 +126,23 @@
       "notes": "",
       "status": "picked_up",
       "createdAt": "2026-06-18T08:23:30.371Z"
+    },
+    {
+      "id": 6,
+      "userId": 5,
+      "userName": "mony",
+      "category": "Laptop / Computer",
+      "description": "",
+      "itemCount": 2,
+      "weight": 7,
+      "date": "2026-06-20",
+      "timeSlot": "10:00 – 12:00",
+      "street": "121",
+      "city": "pp",
+      "postal": "1200",
+      "notes": "",
+      "status": "picked_up",
+      "createdAt": "2026-06-19T06:06:30.955Z"
     }
   ],
   "rewards": [
@@ -249,6 +274,15 @@
       "weight": 5,
       "pointsAwarded": 200,
       "completedAt": "2026-06-18T08:24:07.045Z"
+    },
+    {
+      "id": 4,
+      "pickupId": 6,
+      "userId": 5,
+      "category": "Laptop / Computer",
+      "weight": 7,
+      "pointsAwarded": 336,
+      "completedAt": "2026-06-19T06:07:45.386Z"
     }
   ]
 }
