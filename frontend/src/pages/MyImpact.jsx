@@ -41,7 +41,7 @@ export default function MyImpact() {
   const deviceList = Object.entries(byCategory).map(([name, kg]) => ({
     name, kg: Math.round(kg * 10) / 10,
     pct: totalWeight > 0 ? Math.round((kg / totalWeight) * 100) : 0,
-    icon: name.includes('Laptop') ? '💻' : name.includes('Phone') || name.includes('Smart') ? '📱' : name.includes('Print') ? '🖨' : name.includes('TV') ? '📺' : '🔌',
+    icon: name.includes('Laptop') ? ' ' : name.includes('Phone') || name.includes('Smart') ? ' ' : name.includes('Print') ? ' ' : name.includes('TV') ? ' ' : ' ',
   }));
 
   const monthlyData = impact?.monthlyActivity || {};
@@ -69,11 +69,11 @@ export default function MyImpact() {
             <div className="impact-grid">
               <StatCard icon="♻️" value={`${totalWeight} kg`} label="Total E-Waste Recycled"
                 sub={`Across ${impact?.totalPickups || 0} pickups`} pct={(totalWeight / 50) * 100} goal="50 kg" />
-              <StatCard icon="🌿" value={`${totalCO2} kg`} label="CO₂ Emissions Saved"
+              <StatCard icon=" " value={`${totalCO2} kg`} label="CO₂ Emissions Saved"
                 sub={`≈ ${Math.round(totalCO2 / 0.241)} km not driven`} pct={(totalCO2 / 140) * 100} goal="140 kg" />
-              <StatCard icon="⚡" value={`${totalEnergy} kWh`} label="Energy Conserved"
+              <StatCard icon=" " value={`${totalEnergy} kWh`} label="Energy Conserved"
                 sub={`Powers a home for ~${Math.round(totalEnergy / 11)} days`} pct={(totalEnergy / 300) * 100} goal="300 kWh" />
-              <StatCard icon="🏆" value={points.toLocaleString()} label="Eco Points Earned"
+              <StatCard icon=" " value={points.toLocaleString()} label="Eco Points Earned"
                 sub={`${points >= 2000 ? 'Platinum Member' : points >= 1000 ? 'Gold Member' : 'Working toward Gold'}`}
                 pct={(points / 2000) * 100} goal="2,000 pts" />
             </div>

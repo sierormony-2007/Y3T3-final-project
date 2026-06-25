@@ -1,11 +1,11 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard',      icon: '⊞', path: '/dashboard' },
-  { id: 'track',     label: 'Track Pickups',  icon: '🚛', path: '/track'     },
-  { id: 'rewards',   label: 'Rewards Store',  icon: '🛍', path: '/rewards'   },
-  { id: 'impact',    label: 'My Impact',      icon: '📈', path: '/impact'    },
-  { id: 'schedule',  label: 'Schedule Pickup',icon: '🗓', path: '/schedule'  },
+  { id: 'dashboard', label: 'Dashboard',      icon: ' ', path: '/dashboard' },
+  { id: 'track',     label: 'Track Pickups',  icon: ' ', path: '/track'     },
+  { id: 'rewards',   label: 'Rewards Store',  icon: ' ', path: '/rewards'   },
+  { id: 'impact',    label: 'My Impact',      icon: ' ', path: '/impact'    },
+  { id: 'schedule',  label: 'Schedule Pickup',icon: ' ', path: '/schedule'  },
 ];
 
 export default function Header({ user }) {
@@ -30,7 +30,7 @@ export default function Header({ user }) {
 
       <div className="user-card">
         <div className="user-name">{currentUser.name}</div>
-        <div className="user-pts">♻ {(currentUser.points || 0).toLocaleString()} pts</div>
+        <div className="user-pts"> {(currentUser.points || 0).toLocaleString()} pts</div>
       </div>
 
       {NAV_ITEMS.map(item => (
@@ -46,7 +46,7 @@ export default function Header({ user }) {
           + Request Pickup
         </button>
         <button className="btn-logout" onClick={handleLogout}>
-          ↩ Logout
+          Logout
         </button>
       </div>
     </aside>

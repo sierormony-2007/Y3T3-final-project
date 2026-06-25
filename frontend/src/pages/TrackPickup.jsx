@@ -73,7 +73,7 @@ export default function TrackPickups() {
             <div style={{ display:'flex', alignItems:'center', gap:14, cursor:'pointer' }}
               onClick={() => setExpanded(prev => prev === p.id ? null : p.id)}>
               <div className={`pickup-icon ${p.status === 'recycled' ? 'green' : p.status === 'processing' ? 'orange' : 'yellow'}`}>
-                {p.status === 'recycled' ? '✅' : p.status === 'processing' ? '⚙️' : '⏱'}
+                {p.status === 'recycled' ? ' ' : p.status === 'processing' ? ' ' : ' '}
               </div>
               <div className="pickup-info">
                 <div className="pickup-name">
@@ -108,11 +108,11 @@ export default function TrackPickups() {
                 </div>
                 {p.status !== 'pending' ? (
                   <div className="points-banner">
-                    ✅ <strong>+{Math.round(p.weight * 40)} eco points earned</strong> · {p.weight} kg × 40 pts/kg
+                      <strong>+{Math.round(p.weight * 40)} eco points earned</strong> · {p.weight} kg × 40 pts/kg
                   </div>
                 ) : (
                   <div className="points-banner" style={{ color:'var(--text-secondary)' }}>
-                    📦 Points will be awarded once staff accepts your request
+                      Points will be awarded once staff accepts your request
                   </div>
                 )}
               </>

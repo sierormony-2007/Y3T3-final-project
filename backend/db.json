@@ -4,157 +4,44 @@
       "id": 1,
       "name": "Admin",
       "email": "admin@staff.com",
-      "password": "$2a$08$qVpNgriHudDLPVrTuPG7ZuQHZr4cVHckhnjJ7zLE2kiWeI6neKAnq",
+      "password": "$2a$08$Hj6FqPWnvM5N/oQJWN6dO.hpokQcgUDFWdGptjpC0z6Ze/5JSCt76",
       "role": "staff",
       "points": 0
     },
     {
       "id": 2,
-      "name": "Kim",
+      "name": "kim",
       "email": "kim@example.com",
-      "password": "$2a$08$yGFgXxbE9w96/z/yu38eFepyKD76/1D.gHlsyPzub.hPZosJn/ybe",
+      "password": "$2a$08$G4DHh93avlqZXfR4VRbeLuSK8xmJN22Q5FyIh2fTPqCakFxUfFWGe",
       "role": "user",
       "points": 0
     },
     {
       "id": 3,
-      "name": "kimsorng",
-      "email": "kimsorng@example.com",
-      "password": "$2a$08$ePrfC6ZEd.BAL9uwd1xj/.FBP8YRPzRC9EtB7kNrRL2eT6UVWi.tS",
+      "name": "kimmm",
+      "email": "kimm@example.com",
+      "password": "$2a$08$SGQNRO6VCkWBr4XqJAHEA.QD45cO1811MC1EBHVf2a2njVcr5PBA6",
       "role": "user",
       "points": 0
-    },
-    {
-      "id": 4,
-      "name": "kimsorngg",
-      "email": "kimm",
-      "password": "$2a$08$ykJgT.8VbovkwvNwSp5RVe9RXZa8rd1iXs9DlTPF5CjYu0sAYYvfC",
-      "role": "user",
-<<<<<<< HEAD
-      "points": 578
-    },
-    {
-      "id": 5,
-      "name": "mony",
-      "email": "nii18@gmail.com",
-      "password": "$2a$08$8eHlMGmEUfpQ9HfzTy0HN.gfkN4vkNlwtdwJU6RvPu8BYhrnrVrVK",
-      "role": "user",
-      "points": 336
-=======
-      "points": 0
-    },
-    {
-      "id": 5,
-      "name": "ny",
-      "email": "ny@example.com",
-      "password": "$2a$08$1pxmdma5qK9/4J6KwH9Rh.d5SYRzzz8R4FunxiRn9Pv5rN7UiahW.",
-      "role": "user",
-      "points": 186
-    },
-    {
-      "id": 6,
-      "name": "kimsorng",
-      "email": "kimsorng721@gmail.com",
-      "password": "$2a$08$KnkyCK.W8rS4qCyySzcFy.9SusI5Cu/NzFgyKEQyvQ69kUsA8K6LS",
-      "role": "user",
-      "points": 0
->>>>>>> 89e76711c57b9dadcdab92558b02768790a44a00
     }
   ],
   "pickups": [
     {
       "id": 1,
       "userId": 3,
-      "userName": "kimsorng",
-      "category": "Smartphone / Tablet",
-      "description": "",
-      "itemCount": 2,
-      "weight": 5,
-      "date": "2026-06-18",
-      "timeSlot": "10:00 – 12:00",
-      "street": "12",
-      "city": "PP",
-      "postal": "001",
-      "notes": "ring",
-      "status": "recycled",
-      "createdAt": "2026-06-17T04:12:55.604Z"
-    },
-    {
-      "id": 2,
-      "userId": 4,
-      "userName": "kimsorngg",
+      "userName": "kimmm",
       "category": "Laptop / Computer",
-      "description": "cracked",
+      "description": "",
       "itemCount": 1,
       "weight": 5,
-      "date": "2026-06-19",
+      "date": "2026-06-26",
       "timeSlot": "10:00 – 12:00",
       "street": "CCV",
       "city": "PP",
       "postal": "01",
-      "notes": "ring",
-      "status": "recycled",
-      "createdAt": "2026-06-18T05:41:10.652Z"
-    },
-    {
-      "id": 3,
-      "userId": 5,
-      "userName": "ny",
-      "category": "Smartphone / Tablet",
-      "description": "",
-      "itemCount": 2,
-      "weight": 5.6,
-      "date": "2026-06-19",
-      "timeSlot": "10:00 – 12:00",
-      "street": "BBK",
-      "city": "PP",
-      "postal": "03",
-      "notes": "ring",
-      "status": "recycled",
-      "createdAt": "2026-06-18T09:51:24.894Z"
-    },
-    {
-      "id": 4,
-      "userId": 6,
-      "userName": "kimsorng",
-      "category": "Smartphone / Tablet",
-      "description": "",
-      "itemCount": 2,
-      "weight": 5,
-      "date": "2026-06-25",
-      "timeSlot": "10:00 – 12:00",
-<<<<<<< HEAD
-      "street": "12",
-      "city": "pp",
-      "postal": "124",
       "notes": "",
-      "status": "picked_up",
-      "createdAt": "2026-06-18T08:23:30.371Z"
-    },
-    {
-      "id": 6,
-      "userId": 5,
-      "userName": "mony",
-      "category": "Laptop / Computer",
-      "description": "",
-      "itemCount": 2,
-      "weight": 7,
-      "date": "2026-06-20",
-      "timeSlot": "10:00 – 12:00",
-      "street": "121",
-      "city": "pp",
-      "postal": "1200",
-      "notes": "",
-      "status": "picked_up",
-      "createdAt": "2026-06-19T06:06:30.955Z"
-=======
-      "street": "CCV",
-      "city": "PP",
-      "postal": "01",
-      "notes": "ring",
       "status": "pending",
-      "createdAt": "2026-06-24T15:10:21.981Z"
->>>>>>> 89e76711c57b9dadcdab92558b02768790a44a00
+      "createdAt": "2026-06-25T08:07:42.396Z"
     }
   ],
   "rewards": [
@@ -174,7 +61,7 @@
       "pts": 120,
       "cat": "Bags",
       "emoji": "👜",
-      "stock": 99
+      "stock": 100
     },
     {
       "id": 3,
@@ -219,7 +106,7 @@
       "pts": 60,
       "cat": "Garden",
       "emoji": "🌱",
-      "stock": 149
+      "stock": 150
     },
     {
       "id": 8,
@@ -231,24 +118,7 @@
       "stock": 40
     }
   ],
-  "redemptions": [
-    {
-      "id": 1,
-      "userId": 4,
-      "rewardId": 2,
-      "rewardName": "Organic Cotton Tote Bag",
-      "pointsSpent": 120,
-      "redeemedAt": "2026-06-18T08:25:05.813Z"
-    },
-    {
-      "id": 2,
-      "userId": 5,
-      "rewardId": 7,
-      "rewardName": "Seed Bomb Set",
-      "pointsSpent": 60,
-      "redeemedAt": "2026-06-18T09:52:51.340Z"
-    }
-  ],
+  "redemptions": [],
   "articles": [
     {
       "id": 1,
@@ -267,42 +137,5 @@
       "createdAt": "2026-02-15"
     }
   ],
-  "recyclingRecords": [
-    {
-      "id": 1,
-      "pickupId": 4,
-      "userId": 4,
-      "category": "Laptop / Computer",
-      "weight": 5.8,
-      "pointsAwarded": 278,
-      "completedAt": "2026-06-18T08:16:24.812Z"
-    },
-    {
-      "id": 2,
-      "pickupId": 3,
-      "userId": 4,
-      "category": "Smartphone / Tablet",
-      "weight": 5,
-      "pointsAwarded": 220,
-      "completedAt": "2026-06-18T08:16:29.809Z"
-    },
-    {
-      "id": 3,
-      "pickupId": 5,
-      "userId": 4,
-      "category": "Other Electronics",
-      "weight": 5,
-      "pointsAwarded": 200,
-      "completedAt": "2026-06-18T08:24:07.045Z"
-    },
-    {
-      "id": 4,
-      "pickupId": 6,
-      "userId": 5,
-      "category": "Laptop / Computer",
-      "weight": 7,
-      "pointsAwarded": 336,
-      "completedAt": "2026-06-19T06:07:45.386Z"
-    }
-  ]
+  "recyclingRecords": []
 }
