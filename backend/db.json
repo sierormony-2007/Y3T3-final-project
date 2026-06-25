@@ -26,19 +26,27 @@
     },
     {
       "id": 4,
-<<<<<<< HEAD
       "name": "kimsorngg",
       "email": "kimm",
       "password": "$2a$08$ykJgT.8VbovkwvNwSp5RVe9RXZa8rd1iXs9DlTPF5CjYu0sAYYvfC",
       "role": "user",
       "points": 0
-=======
-      "name": "Rormony",
-      "email": "nii@gmail.com",
-      "password": "$2a$08$hNFA84SM/LkPPUyVWQYG.esyHtvYBNDOh1IwMsf9.Ljju1RFxDA6q",
+    },
+    {
+      "id": 5,
+      "name": "ny",
+      "email": "ny@example.com",
+      "password": "$2a$08$1pxmdma5qK9/4J6KwH9Rh.d5SYRzzz8R4FunxiRn9Pv5rN7UiahW.",
       "role": "user",
-      "points": 578
->>>>>>> 6cb79f15d2a0617f98b248720623d9862f0e27d9
+      "points": 186
+    },
+    {
+      "id": 6,
+      "name": "kimsorng",
+      "email": "kimsorng721@gmail.com",
+      "password": "$2a$08$KnkyCK.W8rS4qCyySzcFy.9SusI5Cu/NzFgyKEQyvQ69kUsA8K6LS",
+      "role": "user",
+      "points": 0
     }
   ],
   "pickups": [
@@ -56,17 +64,12 @@
       "city": "PP",
       "postal": "001",
       "notes": "ring",
-<<<<<<< HEAD
       "status": "recycled",
-=======
-      "status": "processing",
->>>>>>> 6cb79f15d2a0617f98b248720623d9862f0e27d9
       "createdAt": "2026-06-17T04:12:55.604Z"
     },
     {
       "id": 2,
       "userId": 4,
-<<<<<<< HEAD
       "userName": "kimsorngg",
       "category": "Laptop / Computer",
       "description": "cracked",
@@ -80,72 +83,40 @@
       "notes": "ring",
       "status": "recycled",
       "createdAt": "2026-06-18T05:41:10.652Z"
-=======
-      "userName": "Rormony",
-      "category": "Laptop / Computer",
-      "description": "",
-      "itemCount": 2,
-      "weight": 5,
-      "date": "2026-06-19",
-      "timeSlot": "10:00 – 12:00",
-      "street": "12",
-      "city": "PP",
-      "postal": "1200",
-      "notes": "",
-      "status": "recycled",
-      "createdAt": "2026-06-18T06:05:38.246Z"
     },
     {
       "id": 3,
-      "userId": 4,
-      "userName": "Rormony",
+      "userId": 5,
+      "userName": "ny",
       "category": "Smartphone / Tablet",
       "description": "",
-      "itemCount": 4,
-      "weight": 5,
+      "itemCount": 2,
+      "weight": 5.6,
       "date": "2026-06-19",
       "timeSlot": "10:00 – 12:00",
-      "street": "12",
+      "street": "BBK",
       "city": "PP",
-      "postal": "1200",
-      "notes": "",
+      "postal": "03",
+      "notes": "ring",
       "status": "recycled",
-      "createdAt": "2026-06-18T07:44:20.967Z"
+      "createdAt": "2026-06-18T09:51:24.894Z"
     },
     {
       "id": 4,
-      "userId": 4,
-      "userName": "Rormony",
-      "category": "Laptop / Computer",
+      "userId": 6,
+      "userName": "kimsorng",
+      "category": "Smartphone / Tablet",
       "description": "",
       "itemCount": 2,
-      "weight": 5.8,
-      "date": "2026-06-19",
-      "timeSlot": "10:00 – 12:00",
-      "street": "12",
-      "city": "pp",
-      "postal": "12",
-      "notes": "",
-      "status": "recycled",
-      "createdAt": "2026-06-18T08:14:26.629Z"
-    },
-    {
-      "id": 5,
-      "userId": 4,
-      "userName": "Rormony",
-      "category": "Other Electronics",
-      "description": "",
-      "itemCount": 3,
       "weight": 5,
-      "date": "2026-06-19",
+      "date": "2026-06-25",
       "timeSlot": "10:00 – 12:00",
-      "street": "12",
-      "city": "pp",
-      "postal": "124",
-      "notes": "",
-      "status": "picked_up",
-      "createdAt": "2026-06-18T08:23:30.371Z"
->>>>>>> 6cb79f15d2a0617f98b248720623d9862f0e27d9
+      "street": "CCV",
+      "city": "PP",
+      "postal": "01",
+      "notes": "ring",
+      "status": "pending",
+      "createdAt": "2026-06-24T15:10:21.981Z"
     }
   ],
   "rewards": [
@@ -210,7 +181,7 @@
       "pts": 60,
       "cat": "Garden",
       "emoji": "🌱",
-      "stock": 150
+      "stock": 149
     },
     {
       "id": 8,
@@ -230,6 +201,14 @@
       "rewardName": "Organic Cotton Tote Bag",
       "pointsSpent": 120,
       "redeemedAt": "2026-06-18T08:25:05.813Z"
+    },
+    {
+      "id": 2,
+      "userId": 5,
+      "rewardId": 7,
+      "rewardName": "Seed Bomb Set",
+      "pointsSpent": 60,
+      "redeemedAt": "2026-06-18T09:52:51.340Z"
     }
   ],
   "articles": [
