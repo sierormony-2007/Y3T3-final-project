@@ -68,7 +68,7 @@ export default function SchedulePickup() {
         <Header />
         <div className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ textAlign: 'center', maxWidth: 360 }}>
-            <div style={{ fontSize: 64, marginBottom: 20 }}>✅</div>
+            <div style={{ fontSize: 64, marginBottom: 20 }}> </div>
             <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Pickup Scheduled!</div>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
               Your {form.category} pickup is confirmed for {form.date}, {form.timeSlot}. Redirecting…

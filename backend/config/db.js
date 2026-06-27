@@ -35,7 +35,7 @@ if (db.get('users').value().length === 0) {
     { id: 1, name: 'Admin', email: 'admin@staff.com', password: bcrypt.hashSync('123', 8), role: 'staff', points: 0 },
     { id: 2, name: 'kim',   email: 'kim@example.com', password: bcrypt.hashSync('123', 8), role: 'user',  points: 0 }
   ).write();
-  console.log('✅ Seeded default users (admin@staff.com / kim@example.com, password: 123)');
+  console.log('  Seeded default users (admin@staff.com / kim@example.com, password: 123)');
 }
 
 module.exports = db;

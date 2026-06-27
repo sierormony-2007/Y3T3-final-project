@@ -34,17 +34,17 @@ const stats = [
 
 const features = [
   {
-    icon: "📅",
+    icon: " ",
     title: "Schedule Pickup",
     description: "Book a free doorstep e-waste collection in minutes",
   },
   {
-    icon: "🎁",
+    icon: " ",
     title: "Earn EcoPoints",
     description: "Get rewarded for every device you responsibly recycle",
   },
   {
-    icon: "🌍",
+    icon: " ",
     title: "Track Impact",
     description: "See your CO₂ savings and environmental contribution",
   },
@@ -175,7 +175,7 @@ export default function EcoRecycleLanding() {
             marginBottom: "32px",
           }}
         >
-          🏆 Join 24,000+ eco warriors
+            Join 24,000+ eco warriors
         </div>
 
         {/* Headline */}
@@ -225,7 +225,7 @@ export default function EcoRecycleLanding() {
               gap: "8px",
             }}
           >
-            🚀 Get Started Free
+              Get Started Free
           </button>
           <button
             onClick={() => navigate('/login')}
@@ -484,7 +484,7 @@ export default function EcoRecycleLanding() {
               gap: "8px",
             }}
           >
-            🌿 Start Recycling Today
+             Start Recycling Today
           </button>
         </div>
       </section>

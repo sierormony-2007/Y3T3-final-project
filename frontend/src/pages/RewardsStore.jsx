@@ -34,10 +34,10 @@ export default function RewardsStore() {
       setUser(updatedUser);
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
       setRedeemed(prev => new Set([...prev, item.id]));
-      setMsg(`✅ Redeemed: ${item.name}!`);
+      setMsg(` Redeemed: ${item.name}!`);
       setTimeout(() => setMsg(''), 3000);
     } catch (err) {
-      setMsg(`❌ ${err.message}`);
+      setMsg(` ${err.message}`);
       setTimeout(() => setMsg(''), 3000);
     }
   };
@@ -49,10 +49,10 @@ export default function RewardsStore() {
         <div className="page-title">Rewards Store</div>
 
         {msg && (
-          <div style={{ background: msg.startsWith('✅') ? 'var(--green-glow)' : 'rgba(234,88,12,0.15)',
-            border: `1px solid ${msg.startsWith('✅') ? 'var(--green-primary)' : 'var(--badge-orange)'}`,
+          <div style={{ background: msg.startsWith('') ? 'var(--green-glow)' : 'rgba(234,88,12,0.15)',
+            border: `1px solid ${msg.startsWith('') ? 'var(--green-primary)' : 'var(--badge-orange)'}`,
             borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: 16,
-            color: msg.startsWith('✅') ? 'var(--green-bright)' : 'var(--badge-orange)' }}>
+            color: msg.startsWith('') ? 'var(--green-bright)' : 'var(--badge-orange)' }}>
             {msg}
           </div>
         )}
@@ -67,7 +67,7 @@ export default function RewardsStore() {
               </div>
             </div>
           </div>
-          <span className="badge badge-gold">⭐ {(user.points || 0) >= 2000 ? 'Platinum' : (user.points || 0) >= 1000 ? 'Gold' : 'Member'}</span>
+          <span className="badge badge-gold"> {(user.points || 0) >= 2000 ? 'Platinum' : (user.points || 0) >= 1000 ? 'Gold' : 'Member'}</span>
         </div>
 
         <div className="pill-group">
@@ -93,7 +93,7 @@ export default function RewardsStore() {
                     <div className="reward-name">{item.name}</div>
                     <div className="reward-desc">{item.desc}</div>
                     <div className="reward-footer">
-                      <div className="reward-pts">♻ {item.pts} pts</div>
+                      <div className="reward-pts"> {item.pts} pts</div>
                       <button className="btn-redeem"
                         disabled={isRedeemed || !canAfford}
                         onClick={() => handleRedeem(item)}

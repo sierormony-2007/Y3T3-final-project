@@ -139,7 +139,7 @@ export default function StaffDashboard() {
         ) : orderedPickups.map(pickup => (
           <div key={pickup.id} className="pickup-row" style={{ cursor:'default' }}>
             <div className={`pickup-icon ${pickup.status==='recycled'?'green':pickup.status==='processing'?'orange':pickup.status==='picked_up'?'orange':'yellow'}`}>
-              {pickup.status==='recycled'?'✅':pickup.status==='processing'?'🛠':pickup.status==='picked_up'?'📦':'🚚'}
+              {pickup.status==='recycled'?' ':pickup.status==='processing'?'🛠':pickup.status==='picked_up'?'📦':'🚚'}
             </div>
             <div className="pickup-info" style={{ flex:1 }}>
               <div className="pickup-name">{pickup.userName} · {pickup.category}</div>

@@ -78,17 +78,17 @@ export default function Dashboard() {
 
           <div className="stat-grid">
             <div className="stat-cell">
-              <div className="stat-icon">♻️</div>
+              <div className="stat-icon"> </div>
               <div className="stat-value">{(user.points || 0).toLocaleString()}</div>
               <div className="stat-label">Eco Points</div>
             </div>
             <div className="stat-cell">
-              <div className="stat-icon">♻</div>
+              <div className="stat-icon"> </div>
               <div className="stat-value">{impact ? `${impact.totalWeight} kg` : '0 kg'}</div>
               <div className="stat-label">Total Recycled</div>
             </div>
             <div className="stat-cell">
-              <div className="stat-icon">🌿</div>
+              <div className="stat-icon"> </div>
               <div className="stat-value">{impact ? `${impact.totalCO2Saved} kg` : '0 kg'}</div>
               <div className="stat-label">CO₂ Saved</div>
             </div>
@@ -100,13 +100,13 @@ export default function Dashboard() {
             <span className="action-icon">+</span>New Pickup
           </button>
           <button className="action-btn" onClick={() => navigate('/track')}>
-            <span className="action-icon">🚛</span>Track Status
+            <span className="action-icon"> </span>Track Status
           </button>
           <button className="action-btn" onClick={() => navigate('/rewards')}>
-            <span className="action-icon">🛍</span>Rewards Store
+            <span className="action-icon"> </span>Rewards Store
           </button>
           <button className="action-btn" onClick={() => navigate('/impact')}>
-            <span className="action-icon">📈</span>My Impact
+            <span className="action-icon"> </span>My Impact
           </button>
         </div>
 
@@ -122,7 +122,7 @@ export default function Dashboard() {
         ) : activePickups.map(p => (
           <div key={p.id} className="pickup-row" onClick={() => navigate('/track')}>
             <div className={`pickup-icon ${p.status === 'processing' ? 'orange' : 'yellow'}`}>
-              {p.status === 'processing' ? '⚙️' : '⏱'}
+              {p.status === 'processing' ? ' ' : ' '}
             </div>
             <div className="pickup-info">
               <div className="pickup-name">{p.category}</div>
