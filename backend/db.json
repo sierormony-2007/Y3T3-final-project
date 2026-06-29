@@ -23,6 +23,22 @@
       "password": "$2a$08$SGQNRO6VCkWBr4XqJAHEA.QD45cO1811MC1EBHVf2a2njVcr5PBA6",
       "role": "user",
       "points": 0
+    },
+    {
+      "id": 4,
+      "name": "kii",
+      "email": "kii@example.com",
+      "password": "$2a$08$YEGfbjDddDpQCRYfgP2YvOMLFKcSfKLVhwM5GdiKrL0C1AtARVTIS",
+      "role": "user",
+      "points": 0
+    },
+    {
+      "id": 5,
+      "name": "kimsorng",
+      "email": "kimmmm@example.com",
+      "password": "$2a$08$O8cO2oG1R46AcAxi9Ys/x.NptEat0iiUql9To96/DUgCBNUH9wB2O",
+      "role": "user",
+      "points": 0
     }
   ],
   "pickups": [
@@ -40,8 +56,42 @@
       "city": "PP",
       "postal": "01",
       "notes": "",
-      "status": "pending",
+      "status": "accepted",
       "createdAt": "2026-06-25T08:07:42.396Z"
+    },
+    {
+      "id": 2,
+      "userId": 4,
+      "userName": "kii",
+      "category": "Laptop / Computer",
+      "description": "",
+      "itemCount": 1,
+      "weight": 6,
+      "date": "2026-06-26",
+      "timeSlot": "10:00 – 12:00",
+      "street": "CCV",
+      "city": "PP",
+      "postal": "01",
+      "notes": "",
+      "status": "pending",
+      "createdAt": "2026-06-25T08:52:00.872Z"
+    },
+    {
+      "id": 3,
+      "userId": 5,
+      "userName": "kimsorng",
+      "category": "Laptop / Computer",
+      "description": "",
+      "itemCount": 2,
+      "weight": 5,
+      "date": "2026-06-26",
+      "timeSlot": "10:00 – 12:00",
+      "street": "12",
+      "city": "pp",
+      "postal": "1200",
+      "notes": "",
+      "status": "pending",
+      "createdAt": "2026-06-25T09:27:35.132Z"
     }
   ],
   "rewards": [
