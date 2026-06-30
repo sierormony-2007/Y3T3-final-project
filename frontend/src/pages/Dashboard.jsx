@@ -30,7 +30,7 @@ export default function Dashboard() {
         ]);
         setUser(me);
         localStorage.setItem('currentUser', JSON.stringify(me));
-        setPickups(myPickups);
+        setPickups(Array.isArray(myPickups) ? myPickups : myPickups.pickups || []);
         setImpact(myImpact);
       } catch (err) {
         console.error(err);
