@@ -16,4 +16,4 @@ async function getAllUsersCtrl(req, res, next) {
   try { res.json(await svc.getAllUsers()); } catch (err) { next(err); }
 }
 
-module.exports = { register, login, getMe, updateMe, getAllUsersCtrl };
+module.exports = { register, login, getMe, updateMe, getAllUsers: getAllUsersCtrl };

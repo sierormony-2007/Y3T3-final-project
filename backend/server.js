@@ -19,13 +19,15 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Request logger (development)
+//Request logger (development)
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, _res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
   });
 }
+
+
 
 
 
@@ -44,35 +46,26 @@ app.get('/api/health', (_req, res) =>
 
 // Data viewer (dev/debug only)
 app.get('/users', async (_req, res) => {
-  const User       = require('./models/User');
-  const Pickup     = require('./models/Pickup');
-  const Redemption = require('./models/Redemption');
-  const Recycling  = require('./models/Recycling');
+  const { User, PickupRequest, RewardTransaction } = require('./models');
 
-  const users       = await User.findAll();
-  const pickups     = await Pickup.findAll();
-  const redemptions = await Redemption.findAll();
-  const records     = await Recycling.findAll();
+  const users            = await User.findAll();
+  const pickups          = await PickupRequest.findAll();
+  const rewardTransactions = await RewardTransaction.findAll();
 
   const userRows = users.map(u => `
-    <tr><td>${u.id}</td><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${u.points}</td>
-    <td>${u.password}</td></tr>`).join('') ||
-    '<tr><td colspan="6">No users yet</td></tr>';
+    <tr><td>${u.user_id}</td><td>${u.full_name}</td><td>${u.email}</td><td>${u.total_points}</td>
+    <td>${u.account_status}</td></tr>`).join('') ||
+    '<tr><td colspan="5">No users yet</td></tr>';
 
   const pickupRows = pickups.map(p => `
-    <tr><td>${p.id}</td><td>${p.userName}</td><td>${p.category}</td><td>${p.weight} kg</td>
-    <td>${p.date||'-'}</td><td>${p.status}</td><td>${p.street||''}, ${p.city||''}</td></tr>`).join('') ||
+    <tr><td>${p.request_id}</td><td>${p.user_id}</td><td>${p.total_devices}</td><td>${p.total_weight_kg} kg</td>
+    <td>${p.preferred_date}</td><td>${p.status}</td><td>${p.pickup_address}</td></tr>`).join('') ||
     '<tr><td colspan="7">No pickups yet</td></tr>';
 
-  const redemptionRows = redemptions.map(r => `
-    <tr><td>${r.id}</td><td>${r.userId}</td><td>${r.rewardName}</td><td>${r.pointsSpent}</td>
-    <td>${new Date(r.redeemedAt).toLocaleString()}</td></tr>`).join('') ||
-    '<tr><td colspan="5">No redemptions yet</td></tr>';
-
-  const recordRows = records.map(r => `
-    <tr><td>${r.id}</td><td>${r.userId}</td><td>${r.category}</td><td>${r.weight} kg</td>
-    <td>${r.pointsAwarded}</td><td>${new Date(r.completedAt).toLocaleString()}</td></tr>`).join('') ||
-    '<tr><td colspan="6">No records yet</td></tr>';
+  const transactionRows = rewardTransactions.map(r => `
+    <tr><td>${r.transaction_id}</td><td>${r.user_id}</td><td>${r.type}</td><td>${r.points}</td>
+    <td>${r.description || ''}</td></tr>`).join('') ||
+    '<tr><td colspan="5">No reward transactions yet</td></tr>';
 
   res.send(`<!DOCTYPE html><html><head><title>EcoRecycle Data Viewer</title>
   <meta http-equiv="refresh" content="10">
@@ -88,20 +81,16 @@ app.get('/users', async (_req, res) => {
   <p>Auto-refreshes every 10 seconds</p>
 
   <h2>Users (${users.length})</h2>
-  <table><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Points</th><th>Password (hashed)</th></tr></thead>
+  <table><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Points</th><th>Status</th></tr></thead>
   <tbody>${userRows}</tbody></table>
 
   <h2>Pickups (${pickups.length})</h2>
-  <table><thead><tr><th>ID</th><th>User</th><th>Category</th><th>Weight</th><th>Date</th><th>Status</th><th>Address</th></tr></thead>
+  <table><thead><tr><th>ID</th><th>User ID</th><th>Devices</th><th>Weight</th><th>Date</th><th>Status</th><th>Address</th></tr></thead>
   <tbody>${pickupRows}</tbody></table>
 
-  <h2>Redemptions (${redemptions.length})</h2>
-  <table><thead><tr><th>ID</th><th>User ID</th><th>Reward</th><th>Points Spent</th><th>When</th></tr></thead>
-  <tbody>${redemptionRows}</tbody></table>
-
-  <h2>Recycling Records (${records.length})</h2>
-  <table><thead><tr><th>ID</th><th>User ID</th><th>Category</th><th>Weight</th><th>Points</th><th>Completed At</th></tr></thead>
-  <tbody>${recordRows}</tbody></table>
+  <h2>Reward Transactions (${rewardTransactions.length})</h2>
+  <table><thead><tr><th>ID</th><th>User ID</th><th>Type</th><th>Points</th><th>Description</th></tr></thead>
+  <tbody>${transactionRows}</tbody></table>
   </body></html>`);
 });
 
@@ -111,47 +100,17 @@ app.use((_req, res) => res.status(404).json({ message: 'Route not found' }));
 // ── Global Error Handler ─────────────────────────────────────────────────────
 app.use(errorMiddleware);
 
-// app.listen(PORT, () => {
-//   console.log('');
-//   console.log('========================================================');
-//   console.log(` EcoRecycle BACKEND  →  http://localhost:${PORT}`);
-//   // console.log(` Swagger API Docs   →  http://localhost:${PORT}/api-docs`);
-//   // console.log(` Data Viewer        →  http://localhost:${PORT}/users`);
-//   console.log('========================================================');
-//   console.log('   Default accounts:');
-//   console.log('   staff  →  admin@staff.com  / 123');
-//   console.log('   user   →  kim@example.com  / 123');
-//   console.log('');
-// });
 
 
-sequelize.sync({ force: false }).then(async () => {
-  // seed default data if tables are empty
-  const bcrypt = require('bcryptjs');
-  const User = require('./models/User');
-  const Reward = require('./models/Reward');
-  const Article = require('./models/Article');
-
-  const count = await User.count();
-  if (count === 0) {
-    await User.bulkCreate([
-      { name: 'Admin', email: 'admin@staff.com', password: bcrypt.hashSync('123', 8), role: 'staff', points: 0 },
-      { name: 'kim',   email: 'kim@example.com', password: bcrypt.hashSync('123', 8), role: 'user',  points: 0 },
-    ]);
-    console.log('Seeded default users');
-  }
-
-  const rCount = await Reward.count();
-  if (rCount === 0) {
-    await Reward.bulkCreate([
-      { name: 'Bamboo Water Bottle', desc: 'BPA-free', pts: 200, cat: 'Lifestyle', emoji: '🧴', stock: 50 },
-      { name: 'Organic Cotton Tote Bag', desc: 'GOTS-certified', pts: 120, cat: 'Bags', emoji: '👜', stock: 100 },
-      // add the rest of your rewards here
-    ]);
-  }
-
+sequelize.sync({ force: false }).then(() => {
   app.listen(PORT, () => {
-    console.log(`EcoRecycle BACKEND → http://localhost:${PORT}`);
+    console.log('');
+    console.log('========================================================');
+    console.log(` EcoRecycle BACKEND  →  http://localhost:${PORT}`);
+    console.log(` Data Viewer         →  http://localhost:${PORT}/users`);
+    console.log('========================================================');
+    console.log(' No data yet? Run: npm run seed');
+    console.log('');
   });
 }).catch(err => {
   console.error('Database connection failed:', err);
