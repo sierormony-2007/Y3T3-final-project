@@ -24,7 +24,7 @@ const [tab, setTab] = useState(
         data = await api.auth.login({ email: form.email, password: form.password });
       } else {
         if (!form.name) { setError('Name is required'); setLoading(false); return; }
-        data = await api.auth.register({ name: form.name, email: form.email, password: form.password });
+        data = await api.auth.register({ full_name: form.name, email: form.email, password: form.password });
       }
       localStorage.setItem('token', data.token);
       localStorage.setItem('currentUser', JSON.stringify(data.user));

@@ -8,6 +8,8 @@ const RequestDevice = require('./RequestDevice');
 const RewardTransaction = require('./RewardTransaction');
 const Notification = require('./Notification');
 const UserImpact = require('./UserImpact');
+const Reward = require('./Reward');
+const Article = require('./Article');
 
 // ----------------------------------------------------------------
 // ASSOCIATIONS — mirror the FOREIGN KEY ... ON DELETE / ON UPDATE
@@ -47,6 +49,10 @@ Notification.belongsTo(User, { foreignKey: 'user_id' });
 User.hasOne(UserImpact, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 UserImpact.belongsTo(User, { foreignKey: 'user_id' });
 
+// staff 1—M articles (ON DELETE SET NULL — article stays if author is removed)
+Staff.hasMany(Article, { foreignKey: 'staff_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+Article.belongsTo(Staff, { foreignKey: 'staff_id' });
+
 module.exports = {
   sequelize,
   User,
@@ -57,4 +63,6 @@ module.exports = {
   RewardTransaction,
   Notification,
   UserImpact,
+  Reward,
+  Article,
 };
