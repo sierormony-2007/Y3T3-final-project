@@ -1,10 +1,10 @@
-const svc = require('../services/impactService');
+const svc = require('../services/impactViews');
 
-function getUserImpact(req, res, next) {
-  try { res.json(svc.getUserImpact(req.user.id)); } catch (err) { next(err); }
+async function getUserImpact(req, res, next) {
+  try { res.json(await svc.getUserImpact(req.user.id)); } catch (err) { next(err); }
 }
-function getAllImpact(req, res, next) {
-  try { res.json(svc.getAllImpact()); } catch (err) { next(err); }
+async function getAllImpact(req, res, next) {
+  try { res.json(await svc.getAllImpact()); } catch (err) { next(err); }
 }
 
 module.exports = { getUserImpact, getAllImpact };

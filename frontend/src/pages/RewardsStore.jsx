@@ -18,7 +18,7 @@ export default function RewardsStore() {
         setRewards(r);
         setUser(me);
         localStorage.setItem('currentUser', JSON.stringify(me));
-        setRedeemed(new Set(history.map(h => h.rewardId)));
+        setRedeemed(new Set((Array.isArray(history) ? history : []).map(h => h.rewardId)));
       })
       .catch(console.error)
       .finally(() => setLoading(false));

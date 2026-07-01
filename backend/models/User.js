@@ -1,19 +1,56 @@
-// models/User.js
-// Accessor helpers for the users collection in lowdb
-const db = require('../config/db');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
 
-const User = {
-  findAll: () => db.get('users').value(),
-  findById: (id) => db.get('users').find({ id }).value(),
-  findByEmail: (email) => db.get('users').find({ email }).value(),
-  create: (data) => {
-    db.get('users').push(data).write();
-    return data;
+const User = sequelize.define('User', {
+  user_id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
   },
-  update: (id, data) => {
-    db.get('users').find({ id }).assign(data).write();
-    return db.get('users').find({ id }).value();
+  full_name: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
   },
-};
+  email: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    unique: true,
+  },
+  password_hash: {
+    type: DataTypes.STRING(255),
+    allowNull: false, // always store a bcrypt hash, never plaintext
+  },
+  phone: DataTypes.STRING(20),
+  address: DataTypes.TEXT,
+  city: DataTypes.STRING(50),
+  latitude: {
+    type: DataTypes.DECIMAL(10, 7),
+    validate: { min: -90, max: 90 },
+  },
+  longitude: {
+    type: DataTypes.DECIMAL(10, 7),
+    validate: { min: -180, max: 180 },
+  },
+  total_points: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    validate: { min: 0 },
+  },
+  account_status: {
+    type: DataTypes.ENUM('active', 'inactive', 'banned'),
+    allowNull: false,
+    defaultValue: 'active',
+  },
+}, {
+  tableName: 'users',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  indexes: [
+    { fields: ['city'] },
+    { fields: ['account_status'] },
+  ],
+});
 
 module.exports = User;
