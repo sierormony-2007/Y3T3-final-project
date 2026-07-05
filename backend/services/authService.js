@@ -9,16 +9,26 @@ const SALT_ROUNDS = 10;
 function sanitize(user) {
   const plain = user.toJSON ? user.toJSON() : user;
   const { password_hash, ...safe } = plain;
-  return safe;
+  // The frontend was built expecting shorter aliases (id/name/points) —
+  // keep the original DB field names too, but add the aliases so every
+  // page (Header, Dashboard, MyImpact, StaffDashboard, RewardsStore...)
+  // reads the correct value instead of `undefined`.
+  return {
+    ...safe,
+    id: safe.user_id,
+    name: safe.full_name,
+    points: safe.total_points,
+  };
 }
 
 function signToken(user) {
   return jwt.sign(
-    { id: user.user_id, email: user.email, role: 'user' },
+    { id: user.user_id, email: user.email, role: user.role || 'user' },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
 }
+
 
 async function registerUser({ full_name, email, password, phone, address, city, latitude, longitude }) {
   if (!full_name || !email || !password) {

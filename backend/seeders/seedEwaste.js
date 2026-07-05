@@ -1,19 +1,28 @@
+const bcrypt = require('bcryptjs');
 const sequelize = require('../config/db');
-const { User, DeviceCategory, Staff, PickupRequest, RequestDevice, RewardTransaction, Notification, UserImpact } = require('../models');
+const { User, DeviceCategory, Staff, PickupRequest, RequestDevice, RewardTransaction, Notification, UserImpact, Reward } = require('../models');
 
 async function seed() {
   await sequelize.sync({ force: true }); // drops & recreates tables — dev only!
 
+  // Demo login passwords (hashed for real, so login actually works):
+  //   regular users → password123
+  //   staff account → staff123
+  const USER_PASSWORD  = bcrypt.hashSync('password123', 10);
+  const STAFF_PASSWORD = bcrypt.hashSync('staff123', 10);
+
   // USERS — seeded with total_points = 0 (the hook builds it up, like the trigger did)
   const users = await User.bulkCreate([
-    { full_name: 'Srey Leak',    email: 'sreyleak@gmail.com',   password_hash: '$2b$12$Qx1aF7bT0kP9nWc3uV5hZeXjK8mLrYdSf2pTgHnB4qCwR1sA6zVeO', phone: '012345678', address: 'House 12, St. 105, Daun Penh', city: 'Phnom Penh', latitude: 11.5625, longitude: 104.9160, total_points: 0 },
-    { full_name: 'Dara Chhun',   email: 'darachhun@gmail.com',  password_hash: '$2b$12$Lm4nO8pQ2rS6tU0vW3xY7zA1bC5dE9fG2hI4jK6lM8nP0qR2sT4uV', phone: '093456789', address: 'Room 5, Bldg A, Toul Kork', city: 'Phnom Penh', latitude: 11.5795, longitude: 104.9104, total_points: 0 },
-    { full_name: 'Bopha Meas',   email: 'bophameas@gmail.com',  password_hash: '$2b$12$Bc9dE1fG3hI5jK7lM9nO1pQ3rS5tU7vW9xY1zA3bC5dE7fG9hI1jK', phone: '077891234', address: 'No. 88, National Rd 3, Takeo', city: 'Takeo', latitude: 10.9908, longitude: 104.7985, total_points: 0 },
-    { full_name: 'Rithy Sok',    email: 'rithysok@outlook.com', password_hash: '$2b$12$Tu3vW5xY7zA9bC1dE3fG5hI7jK9lM1nO3pQ5rS7tU9vW1xY3zA5bC', phone: '085654321', address: 'Office 3F, Vattanac Tower', city: 'Phnom Penh', latitude: 11.5682, longitude: 104.9282, total_points: 0 },
-    { full_name: 'Channary Ung', email: 'channary@yahoo.com',   password_hash: '$2b$12$Dc5eF7gH9iJ1kL3mN5oP7qR9sT1uV3wX5yZ7aB9cD1eF3gH5iJ7kL', phone: '096123456', address: 'No. 5, St. 2004, Sen Sok', city: 'Phnom Penh', latitude: 11.5921, longitude: 104.8976, total_points: 0 },
-    { full_name: 'Makara Phan',  email: 'makara@gmail.com',     password_hash: '$2b$12$Fg7hI9jK1lM3nO5pQ7rS9tU1vW3xY5zA7bC9dE1fG3hI5jK7lM9nO', phone: '011789456', address: 'No. 23, Riverside, Siem Reap', city: 'Siem Reap', latitude: 13.3621, longitude: 103.8594, total_points: 0 },
-    { full_name: 'Sreynich Lim', email: 'sreynich@gmail.com',   password_hash: '$2b$12$Hi9jK1lM3nO5pQ7rS9tU1vW3xY5zA7bC9dE1fG3hI5jK7lM9nO1pQ', phone: '070345678', address: 'No. 7, St. 60, Chamkar Mon', city: 'Phnom Penh', latitude: 11.5476, longitude: 104.9282, total_points: 0 },
-    { full_name: 'Visal Kong',   email: 'visal.kong@gmail.com', password_hash: '$2b$12$Jk1lM3nO5pQ7rS9tU1vW3xY5zA7bC9dE1fG3hI5jK7lM9nO1pQ3rS', phone: '015234567', address: 'Flat 2B, Olympia City, 7 Makara', city: 'Phnom Penh', latitude: 11.5590, longitude: 104.9220, total_points: 0 },
+    { full_name: 'Srey Leak',    email: 'sreyleak@gmail.com',   password_hash: USER_PASSWORD, phone: '012345678', address: 'House 12, St. 105, Daun Penh', city: 'Phnom Penh', latitude: 11.5625, longitude: 104.9160, total_points: 0, role: 'user' },
+    { full_name: 'Dara Chhun',   email: 'darachhun@gmail.com',  password_hash: USER_PASSWORD, phone: '093456789', address: 'Room 5, Bldg A, Toul Kork', city: 'Phnom Penh', latitude: 11.5795, longitude: 104.9104, total_points: 0, role: 'user' },
+    { full_name: 'Bopha Meas',   email: 'bophameas@gmail.com',  password_hash: USER_PASSWORD, phone: '077891234', address: 'No. 88, National Rd 3, Takeo', city: 'Takeo', latitude: 10.9908, longitude: 104.7985, total_points: 0, role: 'user' },
+    { full_name: 'Rithy Sok',    email: 'rithysok@outlook.com', password_hash: USER_PASSWORD, phone: '085654321', address: 'Office 3F, Vattanac Tower', city: 'Phnom Penh', latitude: 11.5682, longitude: 104.9282, total_points: 0, role: 'user' },
+    { full_name: 'Channary Ung', email: 'channary@yahoo.com',   password_hash: USER_PASSWORD, phone: '096123456', address: 'No. 5, St. 2004, Sen Sok', city: 'Phnom Penh', latitude: 11.5921, longitude: 104.8976, total_points: 0, role: 'user' },
+    { full_name: 'Makara Phan',  email: 'makara@gmail.com',     password_hash: USER_PASSWORD, phone: '011789456', address: 'No. 23, Riverside, Siem Reap', city: 'Siem Reap', latitude: 13.3621, longitude: 103.8594, total_points: 0, role: 'user' },
+    { full_name: 'Sreynich Lim', email: 'sreynich@gmail.com',   password_hash: USER_PASSWORD, phone: '070345678', address: 'No. 7, St. 60, Chamkar Mon', city: 'Phnom Penh', latitude: 11.5476, longitude: 104.9282, total_points: 0, role: 'user' },
+    { full_name: 'Visal Kong',   email: 'visal.kong@gmail.com', password_hash: USER_PASSWORD, phone: '015234567', address: 'Flat 2B, Olympia City, 7 Makara', city: 'Phnom Penh', latitude: 11.5590, longitude: 104.9220, total_points: 0, role: 'user' },
+    // Staff login account — logs into /staff (StaffDashboard) and can manage the Rewards Store
+    { full_name: 'EcoRecycle Staff Admin', email: 'staff@ecorecycle.com', password_hash: STAFF_PASSWORD, phone: '010000000', address: 'EcoRecycle HQ', city: 'Phnom Penh', latitude: 11.5564, longitude: 104.9282, total_points: 0, role: 'staff' },
   ]);
 
   // DEVICE CATEGORIES
@@ -37,7 +46,9 @@ async function seed() {
     { full_name: 'Bunna Heng',  role: 'collector', phone: '077333444', zone: 'Chamkar Mon / BKK',     is_available: false, rating: 4.78 },
     { full_name: 'Ratana Keo',  role: 'collector', phone: '085444555', zone: 'Meanchey / Russey Keo', is_available: true,  rating: 4.90 },
     { full_name: 'Vannak Morn', role: 'collector', phone: '096555666', zone: 'Siem Reap City',        is_available: true,  rating: 4.70 },
+   
   ]);
+
 
   // PICKUP REQUESTS
   const pickups = await PickupRequest.bulkCreate([
@@ -97,6 +108,16 @@ async function seed() {
     await RewardTransaction.create(row); // hook fires here, updates users.total_points
   }
 
+  // REWARDS STORE — 6 items so the grid renders as a clean 2 rows × 3 columns
+  await Reward.bulkCreate([
+    { name: 'Strawberry Tote Bag',      description: 'Cute canvas tote bag with a strawberry print — perfect for grocery runs.', points_cost: 150, category: 'Lifestyle', emoji: '👜', image_url: '/rewards/strawberry-tote-bag.jpg', stock: 40, is_active: true },
+    { name: 'Rosca Insulated Bottle',   description: 'Matte pastel stainless-steel water bottle that keeps drinks cold for hours.', points_cost: 250, category: 'Lifestyle', emoji: '🍶', image_url: '/rewards/rosca-water-bottle.jpg', stock: 30, is_active: true },
+    { name: 'Reusable Coffee Cup',      description: 'Bamboo-lid reusable cup, good for hot or cold drinks on the go.',          points_cost: 100, category: 'Lifestyle', emoji: '☕', stock: 60, is_active: true },
+    { name: '$5 Brown Coffee Voucher',  description: 'Voucher redeemable at any Brown Coffee branch in Phnom Penh.',            points_cost: 200, category: 'Vouchers',  emoji: '🎟️', stock: 25, is_active: true },
+    { name: '1-Month Aeon Mall Parking',description: 'One month of free parking at Aeon Mall.',                                 points_cost: 300, category: 'Vouchers',  emoji: '🅿️', stock: 15, is_active: true },
+    { name: 'Recycled Notebook Set',    description: 'Set of 3 notebooks made from 100% recycled paper.',                       points_cost: 80,  category: 'Stationery', emoji: '📓', stock: 50, is_active: true },
+  ]);
+
   // NOTIFICATIONS
   await Notification.bulkCreate([
     { user_id: 1, title: 'Pickup Confirmed!',      message: 'Your pickup for 2 devices is confirmed for May 10, 9–11am. Staff assigned: Piseth Chea.', type: 'pickup',   is_read: true },
@@ -126,7 +147,10 @@ async function seed() {
   console.log('Seeding complete!');
   const final = await User.findAll({ attributes: ['user_id', 'full_name', 'total_points'] });
   console.log(final.map(u => `${u.full_name}: ${u.total_points}`).join('\n'));
-  // Expect: 60, 180, 0, 520, 90, 0, 210, 75 — matches your fixed totals
+  // Expect: 60, 180, 0, 520, 90, 0, 210, 75, 0 — matches your fixed totals
+  console.log('\n--- Demo logins ---');
+  console.log('Staff: staff@ecorecycle.com / staff123');
+  console.log('User:  sreyleak@gmail.com / password123  (all other seeded users share password123)');
   process.exit(0);
 }
 

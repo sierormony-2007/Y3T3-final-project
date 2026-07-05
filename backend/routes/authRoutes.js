@@ -49,10 +49,10 @@ router.post('/register', register);
  *           examples:
  *             staff:
  *               summary: Staff account
- *               value: { email: "admin@staff.com", password: "123" }
+ *               value: { email: "staff@ecorecycle.com", password: "staff123" }
  *             user:
  *               summary: Regular user
- *               value: { email: "kim@example.com", password: "123" }
+ *               value: { email: "sreyleak@gmail.com", password: "password123" }
  *     responses:
  *       200:
  *         description: Login successful

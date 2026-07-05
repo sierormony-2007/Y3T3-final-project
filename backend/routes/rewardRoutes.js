@@ -1,15 +1,46 @@
 const express = require('express');
-const router = express.Router();
-const auth = require('../middleware/authMiddleware');
-const role = require('../middleware/roleMiddleware');
-const { getRewards, redeemReward, getRedemptionHistory, addReward, updateReward, deleteReward } = require('../controllers/rewardController');
+const router  = express.Router();
+const auth    = require('../middleware/authMiddleware');
+const role    = require('../middleware/roleMiddleware');
+const {
+  getRewards, redeemReward, getRedemptionHistory,
+  addReward, updateReward, deleteReward,
+} = require('../controllers/rewardController');
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Reward:
+ *       type: object
+ *       properties:
+ *         reward_id:   { type: integer }
+ *         name:        { type: string }
+ *         description: { type: string }
+ *         points_cost: { type: integer }
+ *         category:    { type: string }
+ *         emoji:       { type: string }
+ *         stock:       { type: integer }
+ *         is_active:   { type: boolean }
+ *
+ *     RewardInput:
+ *       type: object
+ *       required: [name, points_cost]
+ *       properties:
+ *         name:        { type: string,  example: "Bamboo Water Bottle" }
+ *         description: { type: string,  example: "BPA-free reusable bottle" }
+ *         points_cost: { type: integer, example: 200 }
+ *         category:    { type: string,  example: "Lifestyle" }
+ *         emoji:       { type: string,  example: "🧴" }
+ *         stock:       { type: integer, example: 50 }
+ */
 
 /**
  * @swagger
  * /api/rewards:
  *   get:
  *     tags: [Rewards]
- *     summary: Get all available rewards
+ *     summary: Get all active rewards
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -23,7 +54,7 @@ const { getRewards, redeemReward, getRedemptionHistory, addReward, updateReward,
  *                 $ref: '#/components/schemas/Reward'
  *   post:
  *     tags: [Rewards]
- *     summary: Add a new reward (staff only)
+ *     summary: Add a new reward — STAFF ONLY
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -31,20 +62,21 @@ const { getRewards, redeemReward, getRedemptionHistory, addReward, updateReward,
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [name, pts, cat]
- *             properties:
- *               name: { type: string }
- *               desc: { type: string }
- *               pts: { type: integer }
- *               cat: { type: string }
- *               emoji: { type: string }
- *               stock: { type: integer }
+ *             $ref: '#/components/schemas/RewardInput'
+ *           example:
+ *             name: "Bamboo Water Bottle"
+ *             description: "BPA-free reusable bottle"
+ *             points_cost: 200
+ *             category: "Lifestyle"
+ *             emoji: "🧴"
+ *             stock: 50
  *     responses:
  *       201:
  *         description: Reward created
+ *       403:
+ *         description: Forbidden – staff only
  */
-router.get('/', auth, getRewards);
+router.get('/',  getRewards);
 router.post('/', auth, role('staff'), addReward);
 
 /**
@@ -52,7 +84,7 @@ router.post('/', auth, role('staff'), addReward);
  * /api/rewards/redeem:
  *   post:
  *     tags: [Rewards]
- *     summary: Redeem a reward with points
+ *     summary: Redeem a reward using points (user)
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -65,10 +97,10 @@ router.post('/', auth, role('staff'), addReward);
  *             properties:
  *               rewardId:
  *                 type: integer
- *                 example: 5
+ *                 example: 1
  *     responses:
- *       201:
- *         description: Reward redeemed successfully
+ *       200:
+ *         description: Redeemed successfully
  *       400:
  *         description: Not enough points or out of stock
  */
@@ -79,57 +111,68 @@ router.post('/redeem', auth, redeemReward);
  * /api/rewards/history:
  *   get:
  *     tags: [Rewards]
- *     summary: Get user's redemption history
+ *     summary: Get current user's redemption history
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Redemption history
+ *         description: List of redemption transactions
  */
-router.get('/history', auth, getRedemptionHistory);
+router.get('/history', getRedemptionHistory);
 
 /**
  * @swagger
  * /api/rewards/{id}:
  *   patch:
  *     tags: [Rewards]
- *     summary: Update a reward (staff only)
+ *     summary: Update a reward — STAFF ONLY
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema:
- *           type: integer
+ *         schema: { type: integer }
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               name: { type: string }
- *               pts: { type: integer }
- *               stock: { type: integer }
+ *               name:        { type: string }
+ *               description: { type: string }
+ *               points_cost: { type: integer }
+ *               stock:       { type: integer }
+ *               is_active:   { type: boolean }
+ *           example:
+ *             stock: 100
+ *             points_cost: 150
  *     responses:
  *       200:
  *         description: Updated reward
+ *       403:
+ *         description: Forbidden – staff only
+ *       404:
+ *         description: Reward not found
  *   delete:
  *     tags: [Rewards]
- *     summary: Delete a reward (staff only)
+ *     summary: Deactivate a reward — STAFF ONLY
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema:
- *           type: integer
+ *         schema: { type: integer }
  *     responses:
  *       200:
- *         description: Deleted
+ *         description: Reward deactivated
+ *       403:
+ *         description: Forbidden – staff only
+ *       404:
+ *         description: Reward not found
  */
-router.patch('/:id', auth, role('staff'), updateReward);
+router.patch('/:id',  auth, role('staff'), updateReward);
 router.delete('/:id', auth, role('staff'), deleteReward);
 
 module.exports = router;
