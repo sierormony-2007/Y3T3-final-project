@@ -62,9 +62,13 @@ export const api = {
     history:      ()             => request('GET',    '/pickups/history'),
   },
   rewards: {
-    list:    ()         => request('GET',  '/rewards'),
-    redeem:  (rewardId) => request('POST', '/rewards/redeem', { rewardId }),
-    history: ()         => request('GET',  '/rewards/history'),
+    list:    ()               => request('GET',    '/rewards'),
+    redeem:  (rewardId)       => request('POST',   '/rewards/redeem', { rewardId }),
+    history: ()               => request('GET',    '/rewards/history'),
+    // Staff only — manage the Rewards Store
+    add:     (body)           => request('POST',   '/rewards', body),
+    update:  (id, body)       => request('PATCH',  `/rewards/${id}`, body),
+    remove:  (id)             => request('DELETE', `/rewards/${id}`),
   },
   impact: {
     mine: () => request('GET', '/impact'),

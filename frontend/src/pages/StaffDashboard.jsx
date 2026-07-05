@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../component/Header.jsx';
 import { api } from '../services/api.js';
 
-const STATUS_LABELS = { pending:'Pending', accepted:'Accepted', picked_up:'Picked Up', processing:'Processing', recycled:'Recycled ✓' };
-const STATUS_CLASS  = { pending:'badge badge-pending', accepted:'badge badge-processing', picked_up:'badge badge-processing', processing:'badge badge-processing', recycled:'badge badge-recycled' };
-const NEXT_STATUS   = { pending:'accepted', accepted:'picked_up', picked_up:'processing', processing:'recycled' };
-const ACTION_LABEL  = { pending:'Accept', accepted:'Mark Picked Up', picked_up:'Process', processing:'Complete', recycled:'Done' };
+const STATUS_LABELS = { pending:'Pending', confirmed:'Confirmed', in_transit:'Picked Up', completed:'Recycled ✓', cancelled:'Cancelled' };
+const STATUS_CLASS  = { pending:'badge badge-pending', confirmed:'badge badge-processing', in_transit:'badge badge-processing', completed:'badge badge-recycled', cancelled:'badge badge-cancelled' };
+const NEXT_STATUS   = { pending:'confirmed', confirmed:'in_transit', in_transit:'completed' };
+const ACTION_LABEL  = { pending:'Accept', confirmed:'Mark Picked Up', in_transit:'Complete', completed:'Done', cancelled:'Cancelled' };
+
+const EMPTY_REWARD_FORM = { name: '', description: '', points_cost: '', category: '', emoji: '🎁', image_url: '', stock: '' };
 
 export default function StaffDashboard() {
   const navigate  = useNavigate();
@@ -16,6 +18,20 @@ export default function StaffDashboard() {
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState('');
+
+  // ── Rewards Store management ──────────────────────────────────────────
+  const [rewards, setRewards] = useState([]);
+  const [rewardsLoading, setRewardsLoading] = useState(true);
+  const [rewardsError, setRewardsError] = useState('');
+  const [rewardForm, setRewardForm] = useState(EMPTY_REWARD_FORM);
+  const [editingId, setEditingId] = useState(null); // reward_id currently being edited, or null = add mode
+  const [savingReward, setSavingReward] = useState(false);
+  const [rewardMsg, setRewardMsg] = useState('');
+
+  const loadRewards = () => api.rewards.list()
+    .then(setRewards)
+    .catch(err => setRewardsError(err.message))
+    .finally(() => setRewardsLoading(false));
 
   useEffect(() => {
     api.pickups.list()
@@ -27,23 +43,92 @@ export default function StaffDashboard() {
       .then(setUsers)
       .catch(err => setUsersError(err.message))
       .finally(() => setUsersLoading(false));
+
+    loadRewards();
   }, []);
+
+  const handleRewardFormChange = (e) => {
+    const { name, value } = e.target;
+    setRewardForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const startEditReward = (reward) => {
+    setEditingId(reward.reward_id);
+    setRewardForm({
+      name: reward.name || '',
+      description: reward.description || '',
+      points_cost: reward.points_cost ?? '',
+      category: reward.category || '',
+      emoji: reward.emoji || '🎁',
+      image_url: reward.image_url || '',
+      stock: reward.stock ?? '',
+    });
+  };
+
+  const cancelRewardForm = () => {
+    setEditingId(null);
+    setRewardForm(EMPTY_REWARD_FORM);
+    setRewardMsg('');
+  };
+
+  const handleSaveReward = async () => {
+    if (!rewardForm.name || !rewardForm.points_cost) {
+      setRewardMsg('⚠️ Name and points cost are required');
+      return;
+    }
+    setSavingReward(true);
+    setRewardMsg('');
+    const body = {
+      name: rewardForm.name,
+      description: rewardForm.description,
+      points_cost: Number(rewardForm.points_cost),
+      category: rewardForm.category,
+      emoji: rewardForm.emoji,
+      image_url: rewardForm.image_url,
+      stock: Number(rewardForm.stock) || 0,
+    };
+    try {
+      if (editingId) {
+        await api.rewards.update(editingId, body);
+        setRewardMsg('✅ Reward updated');
+      } else {
+        await api.rewards.add(body);
+        setRewardMsg('✅ Reward added');
+      }
+      await loadRewards();
+      cancelRewardForm();
+    } catch (err) {
+      setRewardMsg(`⚠️ ${err.message}`);
+    } finally {
+      setSavingReward(false);
+    }
+  };
+
+  const handleDeleteReward = async (reward) => {
+    if (!confirm(`Remove "${reward.name}" from the Rewards Store?`)) return;
+    try {
+      await api.rewards.remove(reward.reward_id);
+      await loadRewards();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const summary = useMemo(() => ({
     total:      pickups.length,
     pending:    pickups.filter(p => p.status === 'pending').length,
-    accepted:   pickups.filter(p => p.status === 'accepted').length,
-    processing: pickups.filter(p => p.status === 'processing').length,
-    recycled:   pickups.filter(p => p.status === 'recycled').length,
+    confirmed:  pickups.filter(p => p.status === 'confirmed').length,
+    in_transit: pickups.filter(p => p.status === 'in_transit').length,
+    completed:  pickups.filter(p => p.status === 'completed').length,
   }), [pickups]);
 
   const handleNextStatus = async (pickup) => {
     const next = NEXT_STATUS[pickup.status];
     if (!next) return;
-    setUpdating(pickup.id);
+    setUpdating(pickup.request_id);
     try {
-      const updated = await api.pickups.updateStatus(pickup.id, next);
-      setPickups(prev => prev.map(p => p.id === pickup.id ? updated : p));
+      const updated = await api.pickups.updateStatus(pickup.request_id, next);
+      setPickups(prev => prev.map(p => p.request_id === pickup.request_id ? { ...p, ...updated } : p));
     } catch (err) {
       alert(err.message);
     } finally {
@@ -52,7 +137,7 @@ export default function StaffDashboard() {
   };
 
   const orderedPickups = [...pickups].sort((a, b) => {
-    const order = ['pending','accepted','processing','recycled'];
+    const order = ['pending','confirmed','in_transit','completed','cancelled'];
     return order.indexOf(a.status) - order.indexOf(b.status);
   });
 
@@ -77,9 +162,9 @@ export default function StaffDashboard() {
             {[
               { value: summary.total,      label: 'Total Jobs' },
               { value: summary.pending,    label: 'Pending' },
-              { value: summary.accepted,   label: 'Accepted' },
-              { value: summary.processing, label: 'Processing' },
-              { value: summary.recycled,   label: 'Recycled' },
+              { value: summary.confirmed,  label: 'Confirmed' },
+              { value: summary.in_transit, label: 'Picked Up' },
+              { value: summary.completed,  label: 'Recycled' },
             ].map(s => (
               <div className="stat-cell" key={s.label}>
                 <div className="stat-value">{s.value}</div>
@@ -129,6 +214,105 @@ export default function StaffDashboard() {
         )}
 
         <div className="section-header" style={{ marginTop:24 }}>
+          <div className="section-title">Rewards Store Management</div>
+        </div>
+
+        <div className="card" style={{ marginBottom:16 }}>
+          <div style={{ fontWeight:600, marginBottom:12 }}>{editingId ? 'Edit Reward' : 'Add New Reward'}</div>
+
+          {rewardMsg && (
+            <div style={{ background: rewardMsg.startsWith('✅') ? 'var(--green-glow)' : 'rgba(234,88,12,0.15)',
+              border: `1px solid ${rewardMsg.startsWith('✅') ? 'var(--green-primary)' : 'var(--badge-orange)'}`,
+              borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 12,
+              color: rewardMsg.startsWith('✅') ? 'var(--green-bright)' : 'var(--badge-orange)', fontSize:13 }}>
+              {rewardMsg}
+            </div>
+          )}
+
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:12 }}>
+            <div className="form-group">
+              <label className="form-label">Name</label>
+              <input className="form-input" name="name" value={rewardForm.name} onChange={handleRewardFormChange} placeholder="Bamboo Water Bottle" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Category</label>
+              <input className="form-input" name="category" value={rewardForm.category} onChange={handleRewardFormChange} placeholder="Lifestyle" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Points Cost</label>
+              <input className="form-input" type="number" name="points_cost" value={rewardForm.points_cost} onChange={handleRewardFormChange} placeholder="200" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Stock</label>
+              <input className="form-input" type="number" name="stock" value={rewardForm.stock} onChange={handleRewardFormChange} placeholder="50" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Emoji (fallback icon)</label>
+              <input className="form-input" name="emoji" value={rewardForm.emoji} onChange={handleRewardFormChange} placeholder="🎁" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Image URL (optional)</label>
+              <input className="form-input" name="image_url" value={rewardForm.image_url} onChange={handleRewardFormChange} placeholder="/rewards/my-item.jpg" />
+            </div>
+            <div className="form-group" style={{ gridColumn:'1 / -1' }}>
+              <label className="form-label">Description</label>
+              <input className="form-input" name="description" value={rewardForm.description} onChange={handleRewardFormChange} placeholder="Short description shown to users" />
+            </div>
+          </div>
+
+          <div style={{ display:'flex', gap:10, marginTop:14 }}>
+            <button className="btn-submit" style={{ width:'auto', padding:'10px 20px' }} disabled={savingReward} onClick={handleSaveReward}>
+              {savingReward ? 'Saving…' : editingId ? 'Save Changes' : 'Add Reward'}
+            </button>
+            {editingId && (
+              <button className="action-btn" style={{ padding:'10px 20px' }} onClick={cancelRewardForm}>Cancel</button>
+            )}
+          </div>
+        </div>
+
+        {rewardsLoading ? (
+          <div className="card" style={{ textAlign:'center', color:'var(--text-secondary)', padding:24 }}>Loading rewards…</div>
+        ) : rewardsError ? (
+          <div className="card" style={{ textAlign:'center', color:'var(--badge-orange)', padding:24 }}>{rewardsError}</div>
+        ) : rewards.length === 0 ? (
+          <div className="card" style={{ textAlign:'center', color:'var(--text-secondary)', padding:24 }}>No rewards yet — add one above.</div>
+        ) : (
+          <div className="card" style={{ padding:0, overflow:'hidden' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse' }}>
+              <thead>
+                <tr style={{ background:'var(--bg-panel)' }}>
+                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}></th>
+                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Name</th>
+                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Category</th>
+                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Points</th>
+                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Stock</th>
+                  <th style={{ textAlign:'right', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rewards.map(r => (
+                  <tr key={r.reward_id} style={{ borderTop:'1px solid var(--border)' }}>
+                    <td style={{ padding:'10px 16px' }}>
+                      {r.image_url
+                        ? <img src={r.image_url} alt={r.name} style={{ width:36, height:36, borderRadius:6, objectFit:'cover' }} />
+                        : <span style={{ fontSize:22 }}>{r.emoji || '🎁'}</span>}
+                    </td>
+                    <td style={{ padding:'10px 16px', fontSize:13 }}>{r.name}</td>
+                    <td style={{ padding:'10px 16px', fontSize:13 }}>{r.category}</td>
+                    <td style={{ padding:'10px 16px', fontSize:13 }}>{r.points_cost}</td>
+                    <td style={{ padding:'10px 16px', fontSize:13 }}>{r.stock}</td>
+                    <td style={{ padding:'10px 16px', textAlign:'right' }}>
+                      <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, marginRight:8 }} onClick={() => startEditReward(r)}>Edit</button>
+                      <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, background:'var(--badge-orange)' }} onClick={() => handleDeleteReward(r)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="section-header" style={{ marginTop:24 }}>
           <div className="section-title">Pickup Queue</div>
         </div>
 
@@ -136,34 +320,41 @@ export default function StaffDashboard() {
           <div className="card" style={{ textAlign:'center', color:'var(--text-secondary)', padding:24 }}>Loading…</div>
         ) : orderedPickups.length === 0 ? (
           <div className="card" style={{ textAlign:'center', color:'var(--text-secondary)', padding:24 }}>No pickup requests available.</div>
-        ) : orderedPickups.map(pickup => (
-          <div key={pickup.id} className="pickup-row" style={{ cursor:'default' }}>
-            <div className={`pickup-icon ${pickup.status==='recycled'?'green':pickup.status==='processing'?'orange':pickup.status==='picked_up'?'orange':'yellow'}`}>
-              {pickup.status==='recycled'?' ':pickup.status==='processing'?'🛠':pickup.status==='picked_up'?'📦':'🚚'}
+        ) : orderedPickups.map(pickup => {
+          const deviceNames = (pickup.RequestDevices || []).map(d => d.DeviceCategory?.name).filter(Boolean);
+          const categoryLabel = deviceNames.length ? deviceNames.join(', ') : 'E-waste pickup';
+          const timeSlot = pickup.time_window_start && pickup.time_window_end
+            ? `${String(pickup.time_window_start).slice(0,5)} - ${String(pickup.time_window_end).slice(0,5)}`
+            : '';
+          return (
+          <div key={pickup.request_id} className="pickup-row" style={{ cursor:'default' }}>
+            <div className={`pickup-icon ${pickup.status==='completed'?'green':pickup.status==='in_transit'?'orange':pickup.status==='confirmed'?'orange':'yellow'}`}>
+              {pickup.status==='completed'?'✓':pickup.status==='in_transit'?'📦':pickup.status==='confirmed'?'🛠':'🚚'}
             </div>
             <div className="pickup-info" style={{ flex:1 }}>
-              <div className="pickup-name">{pickup.userName} · {pickup.category}</div>
-              <div className="pickup-meta">{pickup.weight} kg · {pickup.date || 'No date'}</div>
+              <div className="pickup-name">{pickup.User?.full_name || 'Unknown user'} · {categoryLabel}</div>
+              <div className="pickup-meta">{Number(pickup.total_weight_kg) || 0} kg · {pickup.preferred_date || 'No date'}</div>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:8, alignItems:'center' }}>
                 <span className={STATUS_CLASS[pickup.status]||'badge'}>{STATUS_LABELS[pickup.status]}</span>
-                <span style={{ color:'var(--text-secondary)', fontSize:12 }}>{pickup.timeSlot || pickup.notes || ''}</span>
+                <span style={{ color:'var(--text-secondary)', fontSize:12 }}>{timeSlot || pickup.special_note || ''}</span>
               </div>
             </div>
             <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:10 }}>
               <button className="action-btn"
                 style={{ padding:'10px 14px', fontSize:12, minWidth:120 }}
-                disabled={!NEXT_STATUS[pickup.status] || updating === pickup.id}
+                disabled={!NEXT_STATUS[pickup.status] || updating === pickup.request_id}
                 onClick={() => handleNextStatus(pickup)}>
-                {updating === pickup.id ? '…' : ACTION_LABEL[pickup.status]}
+                {updating === pickup.request_id ? '…' : ACTION_LABEL[pickup.status]}
               </button>
               {pickup.status !== 'pending' && (
                 <span style={{ fontSize:12, color:'var(--green-bright)' }}>
-                  +{Math.round((pickup.weight||0)*40)} pts awarded
+                  +{pickup.points_awarded || 0} pts awarded
                 </span>
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
