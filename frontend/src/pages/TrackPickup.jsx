@@ -4,20 +4,33 @@ import { api } from '../services/api.js';
 import { STEPS, STEP_ICONS } from '../data/data.js';
 
 const STATUS_BADGE = {
-  recycled:   'badge badge-recycled',
-  processing: 'badge badge-processing',
-  accepted:   'badge badge-processing',
-  pending:    'badge badge-pending',
+  pending:   'badge badge-pending',
+  accepted: 'badge badge-accepted',
+  in_transit:  'badge badge-processing',
+  completed: 'badge badge-recycled',
+  cancelled: 'badge badge-cancelled',
 };
 const STATUS_LABEL = {
-  recycled:   'Recycled ✓',
-  processing: 'Processing',
-  accepted:   'Accepted',
   pending:    'Pending',
+  confirmed:  'Confirmed',
+  in_transit:  'Picked Up',
+  completed:   'Recycled ✓',
+  cancelled:   'Cancelled',
 };
-const STATUS_STEP = { pending: 1, accepted: 2, processing: 3, recycled: 5 };
-
-function Stepper({ stepDone }) {
+const STATUS_STEP = { pending: 1, confirmed: 2, in_transit: 3, completed: 5, cancelled: 1 };
+function mapPickup(p){
+  const categories = (p.RequestDevices || []).map(d => d.DeviceCategory?.name).filter(Boolean);
+  return{
+    id: p.request_id,
+    status: p.status,
+    ccategory: categories.length ? categories.join(', ') : 'E-Wast pickup',
+    weight: Number(p.total_weight_kg) || 0,
+    itemCount: Number(p.total_devices) || 0,
+    date: p.preferred_date,
+    timeSlot: p.time_window_start && p.time_window_end? `${String(p.time_window_start).slice(0, 5)} - ${String(p.time_window_end).slice(0, 5)}`: '', address: p.pickup_address,
+  };
+}
+  function Stepper({ stepDone }) {
   return (
     <div className="stepper">
       {STEPS.map((label, i) => {
@@ -43,8 +56,9 @@ export default function TrackPickups() {
   useEffect(() => {
     api.pickups.list()
       .then(data => {
-        setPickups(data);
-        if (data.length > 0) setExpanded(data[0].id);
+        const mapped = data.map(mapPickup);
+        setPickups(mapped);
+        if (mapped.length > 0) setExpanded(mapped[0].id);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -72,8 +86,8 @@ export default function TrackPickups() {
           <div className="card" key={p.id} style={{ marginBottom:10 }}>
             <div style={{ display:'flex', alignItems:'center', gap:14, cursor:'pointer' }}
               onClick={() => setExpanded(prev => prev === p.id ? null : p.id)}>
-              <div className={`pickup-icon ${p.status === 'recycled' ? 'green' : p.status === 'processing' ? 'orange' : 'yellow'}`}>
-                {p.status === 'recycled' ? ' ' : p.status === 'processing' ? ' ' : ' '}
+              <div className={`pickup-icon ${p.status === 'completed' ? 'green' : (p.status === 'confirmed' || p.status === 'in_transit') ? 'orange' : 'yellow'}`}>
+                {p.status === 'completed' ? '' : (p.status === 'confirmed' || p.status === 'in_transit') ? '' : ''}
               </div>
               <div className="pickup-info">
                 <div className="pickup-name">
@@ -93,6 +107,7 @@ export default function TrackPickups() {
               </div>
             </div>
 
+
             {expanded === p.id && (
               <>
                 <Stepper stepDone={STATUS_STEP[p.status] || 1} />
@@ -104,7 +119,7 @@ export default function TrackPickups() {
                 </div>
                 <div className="detail-cell" style={{ border:'1px solid var(--border)', borderRadius:'var(--radius-md)', padding:14, marginBottom:12 }}>
                   <div className="detail-label">Address</div>
-                  <div className="detail-value" style={{ fontSize:14 }}>{p.street}, {p.city} {p.postal}</div>
+                  <div className="detail-value" style={{ fontSize:14 }}>{p.address}</div>
                 </div>
                 {p.status !== 'pending' ? (
                   <div className="points-banner">

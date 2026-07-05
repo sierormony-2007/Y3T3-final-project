@@ -93,6 +93,7 @@ async function getPickups(userId, role) {
     include: [
       { model: User, attributes: ['full_name', 'phone', 'city'] },
       { model: Staff, attributes: ['full_name'], required: false },
+      {model: RequestDevice, include: [{ model: DeviceCategory }] },
     ],
     order: [['requested_at', 'DESC']],
   });

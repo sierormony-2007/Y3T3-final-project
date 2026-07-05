@@ -45,7 +45,7 @@ export default function Dashboard() {
   }, []);
 
   const activePickups = pickups.filter(p => p.status !== 'recycled').slice(0, 3);
-  const recentActivity = [...pickups].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+  const recentActivity = pickups.filter(p => p.status !== 'recycled').slice(0, 3);
 
   if (loading) return (
     <div className="app-shell">
