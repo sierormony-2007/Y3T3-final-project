@@ -40,6 +40,7 @@ const [tab, setTab] = useState(
     <div className="login-shell">
       <div className="login-card">
         <div className="login-logo">
+          <button className="back-btn" onClick={() => navigate('LandingScreen')} >← </button>
           <div className="logo-icon">♻️</div>
           EcoRecycle
         </div>

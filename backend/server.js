@@ -11,13 +11,14 @@ const impactRoutes  = require('./routes/impactRoutes');
 const articleRoutes = require('./routes/articleRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const errorMiddleware = require('./middleware/errorMiddleware');
-
+const categoryRoutes = require('./routes/deviceCategoryRoutes');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Core Middleware ──────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
+app.use('/api/categories', categoryRoutes);
 
 //Request logger (development)
 if (process.env.NODE_ENV !== 'production') {

@@ -1,15 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../component/Header.jsx';
 import { api } from '../services/api.js';
-import { DEVICE_CATEGORIES, TIME_SLOTS } from '../data/data.js';
+import { TIME_SLOTS } from '../data/data.js';
 
 const today = new Date().toISOString().split('T')[0];
 
 export default function SchedulePickup() {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const data = await api.categories.list();
+      console.log('Categories:', data);
+      setCategories(data);
+    }catch (err) {
+      console.error(err);
+    }
+  };
+  loadCategories();
+}, []);
   const [form, setForm] = useState({
-    category: '', description: '', itemCount: 1,
+    category: null, description: '', itemCount: 1,
     weight: '', date: '', timeSlot: '10:00 – 12:00',
     street: '', city: '', postal: '', notes: '',
   });
@@ -32,6 +45,8 @@ export default function SchedulePickup() {
       e.weight = 'Minimum weight is 5 kg for pickup.';
     if (!form.date)   e.date   = 'Please choose a pickup date.';
     if (!form.street) e.street = 'Please enter your street address.';
+    if (!form.city)   e.city   = 'Please enter your city.';
+    if (!form.postal) e.postal = 'Please enter your postal code.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -41,17 +56,22 @@ export default function SchedulePickup() {
     setLoading(true);
     setApiError('');
     try {
+    const [start, end] = form.timeSlot.split(/\s+[–-]\s+/);
       await api.pickups.create({
-        category:    form.category,
-        description: form.description,
-        itemCount:   form.itemCount,
-        weight:      parseFloat(form.weight),
-        date:        form.date,
-        timeSlot:    form.timeSlot,
-        street:      form.street,
-        city:        form.city,
-        postal:      form.postal,
-        notes:       form.notes,
+        pickup_address: `${form.street}, ${form.city}, ${form.postal}`,
+        preferred_date: form.date,
+        time_window_start: `${start}:00`,
+        time_window_end: `${end}:00`,
+        special_note: form.notes,
+
+        devices: [
+          {
+            category_id: Number(form.category),
+            quantity: form.itemCount,
+            weight_kg: parseFloat(form.weight),
+            notes: form.description,
+          }
+        ]
       });
       setSubmitted(true);
       setTimeout(() => navigate('/dashboard'), 2500);
@@ -100,9 +120,17 @@ export default function SchedulePickup() {
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>1 · Device Type</div>
             <div className="form-group">
               <label className="form-label">Category</label>
-              <select className="form-select" value={form.category} onChange={e => set('category', e.target.value)}>
-                <option value="">Select device category</option>
-                {DEVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              <select
+                className = "form-select"
+                value={form.category}
+                onChange={e => set('category', e.target.value)}
+                >
+                <option value="">Select a category</option>
+                {categories.map(c =>
+                  <option key={c.category_id} value={c.category_id}>
+                    {c.name}
+                  </option>
+                )}
               </select>
               {errors.category && <div style={{ color: 'var(--badge-orange)', fontSize: 11, marginTop: 4 }}>{errors.category}</div>}
             </div>

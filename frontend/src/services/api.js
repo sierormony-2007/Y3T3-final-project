@@ -5,6 +5,7 @@ function getToken() {
   return localStorage.getItem('token');
 }
 
+
 async function request(method, path, body) {
   const headers = { 'Content-Type': 'application/json' };
   const token = getToken();
@@ -49,6 +50,9 @@ export const api = {
     updateMe: (body)  => request('PATCH','/auth/me', body),
     users:    ()      => request('GET',  '/auth/users'),
   },
+  categories: {
+  list: () => request('GET', '/categories')
+},
   pickups: {
     create:       (body)         => request('POST',   '/pickups', body),
     list:         ()             => request('GET',    '/pickups'),
