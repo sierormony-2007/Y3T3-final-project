@@ -28,6 +28,7 @@ function mapPickup(p){
     itemCount: Number(p.total_devices) || 0,
     date: p.preferred_date,
     timeSlot: p.time_window_start && p.time_window_end? `${String(p.time_window_start).slice(0, 5)} - ${String(p.time_window_end).slice(0, 5)}`: '', address: p.pickup_address,
+    phone: p.phone, mapLink: p.link,
   };
 }
   function Stepper({ stepDone }) {
@@ -121,6 +122,24 @@ export default function TrackPickups() {
                   <div className="detail-label">Address</div>
                   <div className="detail-value" style={{ fontSize:14 }}>{p.address}</div>
                 </div>
+                {(p.phone || p.mapLink) && (
+                  <div className="detail-cell" style={{ border:'1px solid var(--border)', borderRadius:'var(--radius-md)', padding:14, marginBottom:12, display:'flex', gap:20, flexWrap:'wrap' }}>
+                    {p.phone && (
+                      <div>
+                        <div className="detail-label">Contact Phone</div>
+                        <div className="detail-value" style={{ fontSize:14 }}>{p.phone}</div>
+                      </div>
+                    )}
+                    {p.mapLink && (
+                      <div>
+                        <div className="detail-label">Map Link</div>
+                        <a href={p.mapLink} target="_blank" rel="noopener noreferrer" style={{ fontSize:14, color:'var(--green-bright)' }}>
+                          View location ↗
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {p.status !== 'pending' ? (
                   <div className="points-banner">
                       <strong>+{Math.round(p.weight * 40)} eco points earned</strong> · {p.weight} kg × 40 pts/kg
