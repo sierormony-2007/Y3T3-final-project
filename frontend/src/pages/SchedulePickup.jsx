@@ -25,6 +25,7 @@ export default function SchedulePickup() {
     category: null, description: '', itemCount: 1,
     weight: '', date: '', timeSlot: '10:00 – 12:00',
     street: '', city: '', postal: '', notes: '',
+    phone: '', mapLink: '',
   });
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -47,6 +48,8 @@ export default function SchedulePickup() {
     if (!form.street) e.street = 'Please enter your street address.';
     if (!form.city)   e.city   = 'Please enter your city.';
     if (!form.postal) e.postal = 'Please enter your postal code.';
+    if (!form.phone)  e.phone  = 'Please enter a contact phone number.';
+    else if (!/^[0-9+\-\s]{8,}$/.test(form.phone)) e.phone = 'Please enter a valid phone number.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -63,6 +66,8 @@ export default function SchedulePickup() {
         time_window_start: `${start}:00`,
         time_window_end: `${end}:00`,
         special_note: form.notes,
+        phone: form.phone,
+        link: form.mapLink || undefined,
 
         devices: [
           {
@@ -206,6 +211,23 @@ export default function SchedulePickup() {
                 <label className="form-label">Postal Code</label>
                 <input className="form-input" type="text" placeholder="12000"
                   value={form.postal} onChange={e => set('postal', e.target.value)} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Contact Phone Number</label>
+              <input className="form-input" type="tel" placeholder="012 345 678"
+                value={form.phone} onChange={e => set('phone', e.target.value)} />
+              {errors.phone && <div style={{ color: 'var(--badge-orange)', fontSize: 11, marginTop: 4 }}>{errors.phone}</div>}
+              <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
+                Our staff will call this number to confirm the pickup.
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Google Maps Link (optional)</label>
+              <input className="form-input" type="url" placeholder="https://maps.google.com/?q=..."
+                value={form.mapLink} onChange={e => set('mapLink', e.target.value)} />
+              <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
+                Paste a Google Maps link to your location so staff can find it easily.
               </div>
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>

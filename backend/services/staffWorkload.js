@@ -31,6 +31,9 @@ async function createPickup(userId, body) {
   if (!pickup_address || !preferred_date || !time_window_start || !time_window_end) {
     throw { status: 400, message: 'pickup_address, preferred_date, time_window_start and time_window_end are required' };
   }
+  if (!phone) {
+    throw { status: 400, message: 'A contact phone number is required' };
+  }
   if (!Array.isArray(devices) || devices.length === 0) {
     throw { status: 400, message: 'At least one device is required' };
   }
@@ -131,18 +134,23 @@ async function updateStatus(id, status, role) {
     const pickup = await PickupRequest.findByPk(id, { transaction: t });
     if (!pickup) throw { status: 404, message: 'Pickup request not found' };
 
-    const wasCompleted = pickup.status === 'completed';
+    const wasConfirmedOrBeyond = pickup.status !== 'pending';
     pickup.status = status;
-    if (status === 'completed' && !wasCompleted) {
-      pickup.completed_at = new Date();
 
+    if (status === 'completed') {
+      pickup.completed_at = new Date();
+    }
+
+    // Credit points + impact stats the moment staff confirms the pickup —
+    // this is the "Accept" action, the first status change away from pending.
+    if (status === 'confirmed' && !wasConfirmedOrBeyond) {
       if (pickup.points_awarded > 0) {
         await RewardTransaction.create({
           user_id:     pickup.user_id,
           request_id:  pickup.request_id,
           type:        'earned',
           points:      pickup.points_awarded,
-          description: `Pickup #${pickup.request_id} completed`,
+          description: `Pickup #${pickup.request_id} confirmed`,
         }, { transaction: t });
       }
 
@@ -166,17 +174,45 @@ async function updateStatus(id, status, role) {
 }
 
 async function cancelPickup(id, userId, role) {
-  const pickup = await PickupRequest.findByPk(id);
-  if (!pickup) throw { status: 404, message: 'Pickup request not found' };
-  if (!isStaff(role) && pickup.user_id !== userId) {
-    throw { status: 403, message: 'Forbidden: not your pickup request' };
-  }
-  if (['completed', 'cancelled'].includes(pickup.status)) {
-    throw { status: 400, message: `Cannot cancel a pickup that is already ${pickup.status}` };
-  }
-  pickup.status = 'cancelled';
-  await pickup.save();
-  return pickup;
+  return sequelize.transaction(async (t) => {
+    const pickup = await PickupRequest.findByPk(id, { transaction: t });
+    if (!pickup) throw { status: 404, message: 'Pickup request not found' };
+    if (!isStaff(role) && pickup.user_id !== userId) {
+      throw { status: 403, message: 'Forbidden: not your pickup request' };
+    }
+    if (['completed', 'cancelled'].includes(pickup.status)) {
+      throw { status: 400, message: `Cannot cancel a pickup that is already ${pickup.status}` };
+    }
+
+    // Points/impact are credited as soon as staff confirms (see updateStatus).
+    // If this pickup was already confirmed, claw that credit back on cancel.
+    const wasConfirmedOrBeyond = pickup.status !== 'pending';
+    if (wasConfirmedOrBeyond) {
+      if (pickup.points_awarded > 0) {
+        await RewardTransaction.create({
+          user_id:     pickup.user_id,
+          request_id:  pickup.request_id,
+          type:        'redeemed',
+          points:      -pickup.points_awarded,
+          description: `Pickup #${pickup.request_id} cancelled — points reversed`,
+        }, { transaction: t });
+      }
+      const impact = await UserImpact.findOne({ where: { user_id: pickup.user_id }, transaction: t });
+      if (impact) {
+        await impact.decrement({
+          total_devices:      pickup.total_devices,
+          total_weight_kg:    pickup.total_weight_kg,
+          co2_saved_kg:       Number(pickup.total_weight_kg) * 1.5,
+          toxins_diverted_kg: Number(pickup.total_weight_kg) * 0.05,
+          total_pickups:      1,
+        }, { transaction: t });
+      }
+    }
+
+    pickup.status = 'cancelled';
+    await pickup.save({ transaction: t });
+    return pickup;
+  });
 }
 
 async function getHistory(userId) {

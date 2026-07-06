@@ -334,9 +334,22 @@ export default function StaffDashboard() {
             <div className="pickup-info" style={{ flex:1 }}>
               <div className="pickup-name">{pickup.User?.full_name || 'Unknown user'} · {categoryLabel}</div>
               <div className="pickup-meta">{Number(pickup.total_weight_kg) || 0} kg · {pickup.preferred_date || 'No date'}</div>
+              <div className="pickup-meta" style={{ marginTop: 2 }}>{pickup.pickup_address}</div>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:8, alignItems:'center' }}>
                 <span className={STATUS_CLASS[pickup.status]||'badge'}>{STATUS_LABELS[pickup.status]}</span>
                 <span style={{ color:'var(--text-secondary)', fontSize:12 }}>{timeSlot || pickup.special_note || ''}</span>
+              </div>
+              <div style={{ display:'flex', gap:14, flexWrap:'wrap', marginTop:8, alignItems:'center' }}>
+                {pickup.phone && (
+                  <a href={`tel:${pickup.phone}`} style={{ fontSize:12, color:'var(--green-bright)', textDecoration:'none' }}>
+                    📞 {pickup.phone}
+                  </a>
+                )}
+                {pickup.link && (
+                  <a href={pickup.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:'var(--green-bright)', textDecoration:'none' }}>
+                    📍 View on map
+                  </a>
+                )}
               </div>
             </div>
             <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:10 }}>

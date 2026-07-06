@@ -197,6 +197,9 @@ sequelize.sync({ force: false }).then(() => {
     console.log(` EcoRecycle BACKEND  →  http://localhost:${PORT}`);
     console.log(` Swagger API Docs    →  http://localhost:${PORT}/api/docs`);
     console.log(` Data Viewer         →  http://localhost:${PORT}/users`);
+    console.log(` Data Viewer         →  http://localhost:${PORT}/api/users`);
+    console.log(` Data Viewer         →  http://localhost:${PORT}/api/pickups`);
+    console.log(` Data Viewer         →  http://localhost:${PORT}/api/categories`);
     console.log('========================================================');
     console.log(' No data yet? Run: npm run seed');
     console.log('');
