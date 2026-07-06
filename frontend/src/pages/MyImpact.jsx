@@ -33,20 +33,11 @@ export default function MyImpact() {
   }, []);
 
   const points = user.points || 0;
-  const totalWeight = impact?.totalWeight || 0;
-  const totalCO2 = impact?.totalCO2Saved || 0;
-  const totalEnergy = impact?.totalEnergySaved || 0;
-
-  const byCategory = impact?.byCategory || {};
-  const deviceList = Object.entries(byCategory).map(([name, kg]) => ({
-    name, kg: Math.round(kg * 10) / 10,
-    pct: totalWeight > 0 ? Math.round((kg / totalWeight) * 100) : 0,
-    icon: name.includes('Laptop') ? ' ' : name.includes('Phone') || name.includes('Smart') ? ' ' : name.includes('Print') ? ' ' : name.includes('TV') ? ' ' : ' ',
-  }));
-
-  const monthlyData = impact?.monthlyActivity || {};
-  const monthlyEntries = Object.entries(monthlyData).sort();
-  const maxMonthly = Math.max(...Object.values(monthlyData), 1);
+  const totalWeight = Number(impact?.total_weight_kg) || 0;
+  const totalCO2 = Number(impact?.co2_saved_kg) || 0;
+  // Rough estimate: ~2 kWh of embodied energy recovered per kg of e-waste diverted
+  const totalEnergy = Math.round(totalWeight * 2 * 10) / 10;
+  const totalPickups = impact?.total_pickups || 0;
 
   const userAchievements = ACHIEVEMENTS.map(a => ({
     ...a,
@@ -68,7 +59,7 @@ export default function MyImpact() {
           <>
             <div className="impact-grid">
               <StatCard icon="♻️" value={`${totalWeight} kg`} label="Total E-Waste Recycled"
-                sub={`Across ${impact?.totalPickups || 0} pickups`} pct={(totalWeight / 50) * 100} goal="50 kg" />
+                sub={`Across ${totalPickups} pickups`} pct={(totalWeight / 50) * 100} goal="50 kg" />
               <StatCard icon=" " value={`${totalCO2} kg`} label="CO₂ Emissions Saved"
                 sub={`≈ ${Math.round(totalCO2 / 0.241)} km not driven`} pct={(totalCO2 / 140) * 100} goal="140 kg" />
               <StatCard icon=" " value={`${totalEnergy} kWh`} label="Energy Conserved"
@@ -78,40 +69,21 @@ export default function MyImpact() {
                 pct={(points / 2000) * 100} goal="2,000 pts" />
             </div>
 
-            {deviceList.length > 0 && (
-              <>
-                <div className="section-header"><div className="section-title">Breakdown by Device Type</div></div>
-                <div className="card" style={{ marginBottom:24 }}>
-                  {deviceList.map(d => (
-                    <div key={d.name} style={{ marginBottom:14 }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}>
-                        <span>{d.icon} {d.name}</span>
-                        <span style={{ color:'var(--green-bright)', fontWeight:600 }}>{d.kg} kg</span>
-                      </div>
-                      <div className="progress-bar-wrap">
-                        <div className="progress-bar-fill" style={{ width:`${d.pct}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {monthlyEntries.length > 0 && (
-              <>
-                <div className="section-header"><div className="section-title">Monthly Activity</div></div>
-                <div className="card" style={{ marginBottom:24 }}>
-                  <div className="bar-chart">
-                    {monthlyEntries.map(([month, kg]) => (
-                      <div className="bar-col" key={month}>
-                        <div className="bar-fill highlight" style={{ height:`${(kg / maxMonthly) * 100}%` }} />
-                        <div className="bar-label">{month.slice(5)}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+            <div className="section-header"><div className="section-title">Recycling Summary</div></div>
+            <div className="card" style={{ marginBottom:24, display:'flex', gap:32, flexWrap:'wrap' }}>
+              <div>
+                <div style={{ fontSize:22, fontWeight:700, color:'var(--green-bright)' }}>{impact?.total_devices || 0}</div>
+                <div style={{ fontSize:12, color:'var(--text-secondary)' }}>Devices recycled</div>
+              </div>
+              <div>
+                <div style={{ fontSize:22, fontWeight:700, color:'var(--green-bright)' }}>{totalPickups}</div>
+                <div style={{ fontSize:12, color:'var(--text-secondary)' }}>Completed pickups</div>
+              </div>
+              <div>
+                <div style={{ fontSize:22, fontWeight:700, color:'var(--green-bright)' }}>{Number(impact?.toxins_diverted_kg || 0).toFixed(2)} kg</div>
+                <div style={{ fontSize:12, color:'var(--text-secondary)' }}>Toxins diverted</div>
+              </div>
+            </div>
 
             <div className="section-header"><div className="section-title">Achievements</div></div>
             <div className="achievement-grid">

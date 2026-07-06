@@ -19,6 +19,7 @@ const Reward = sequelize.define('Reward', {
   },
   category: DataTypes.STRING(50),
   emoji: DataTypes.STRING(10),
+  image_url: DataTypes.STRING(500),
   stock: {
     type: DataTypes.INTEGER,
     allowNull: false,

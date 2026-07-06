@@ -275,6 +275,8 @@ button { cursor: pointer; font-family: var(--font); }
 .badge-recycled   { background: rgba(0, 17, 6, 0.15);  color: var(--green-primary); }
 .badge-processing { background: rgba(27, 15, 1, 0.2);   color: var(--badge-gold); }
 .badge-pending    { background: rgba(23, 8, 0, 0.15);  color: var(--badge-orange); }
+.badge-accepted   { background: rgba(27, 15, 1, 0.2);   color: var(--badge-gold); }
+.badge-cancelled  { background: rgba(23, 8, 0, 0.15);  color: var(--badge-orange); }
 .badge-gold       { background: rgba(13, 7, 0, 0.2);   color: var(--badge-gold); border: 1px solid var(--badge-gold); border-radius: 4px; }
  
 /* ── Stepper ── */
@@ -351,7 +353,7 @@ button { cursor: pointer; font-family: var(--font); }
 /* ── Rewards ── */
 .rewards-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-top: 20px;
 }

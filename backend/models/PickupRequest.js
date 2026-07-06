@@ -21,7 +21,7 @@ const PickupRequest = sequelize.define('PickupRequest', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  pickup_latitude: DataTypes.DECIMAL(10, 7),
+  pickup_latitude:  DataTypes.DECIMAL(10, 7),
   pickup_longitude: DataTypes.DECIMAL(10, 7),
   preferred_date: {
     type: DataTypes.DATEONLY,
@@ -36,6 +36,20 @@ const PickupRequest = sequelize.define('PickupRequest', {
     allowNull: false,
   },
   special_note: DataTypes.TEXT,
+  // ── NEW fields ──────────────────────────────────────────────
+  phone: {
+    type: DataTypes.STRING(30),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Contact phone number for this pickup',
+  },
+  link: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Google Maps or any reference link for the pickup location',
+  },
+  // ────────────────────────────────────────────────────────────
   total_devices: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -59,9 +73,8 @@ const PickupRequest = sequelize.define('PickupRequest', {
   tableName: 'pickup_requests',
   timestamps: true,
   createdAt: 'requested_at',
-  updatedAt: false, // schema has no updated_at column on this table
+  updatedAt: false,
   validate: {
-    // mirrors: CONSTRAINT chk_time_window CHECK (time_window_end > time_window_start)
     timeWindowValid() {
       if (this.time_window_end <= this.time_window_start) {
         throw new Error('time_window_end must be after time_window_start');

@@ -5,12 +5,26 @@ import { api } from '../services/api.js';
 
 function statusBadge(status) {
   const map = {
-    processing: 'badge badge-processing',
+    confirmed:  'badge badge-processing',
     pending:    'badge badge-pending',
-    recycled:   'badge badge-recycled',
-    accepted:   'badge badge-processing',
+    completed:  'badge badge-recycled',
+    in_transit: 'badge badge-processing',
+    cancelled:  'badge badge-cancelled',
   };
-  return <span className={map[status] ?? 'badge'}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+  const label = { pending:'Pending', confirmed:'Confirmed', in_transit:'Picked Up', completed:'Recycled', cancelled:'Cancelled' }[status] || status;
+  return <span className={map[status] ?? 'badge'}>{label}</span>;
+}
+
+function pickupSummary(p) {
+  const deviceNames = (p.RequestDevices || []).map(d => d.DeviceCategory?.name).filter(Boolean);
+  return {
+    id: p.request_id,
+    status: p.status,
+    category: deviceNames.length ? deviceNames.join(', ') : 'E-waste pickup',
+    weight: Number(p.total_weight_kg) || 0,
+    date: p.preferred_date,
+    createdAt: p.requested_at,
+  };
 }
 
 export default function Dashboard() {
@@ -30,7 +44,7 @@ export default function Dashboard() {
         ]);
         setUser(me);
         localStorage.setItem('currentUser', JSON.stringify(me));
-        setPickups(Array.isArray(myPickups) ? myPickups : myPickups.pickups || []);
+        setPickups((Array.isArray(myPickups) ? myPickups : myPickups.pickups || []).map(pickupSummary));
         setImpact(myImpact);
       } catch (err) {
         console.error(err);
@@ -44,8 +58,8 @@ export default function Dashboard() {
     load();
   }, []);
 
-  const activePickups = pickups.filter(p => p.status !== 'recycled').slice(0, 3);
-  const recentActivity = pickups.filter(p => p.status !== 'recycled').slice(0, 3);
+  const activePickups = pickups.filter(p => p.status !== 'completed' && p.status !== 'cancelled').slice(0, 3);
+  const recentActivity = pickups.slice(0, 3);
 
   if (loading) return (
     <div className="app-shell">
@@ -84,12 +98,12 @@ export default function Dashboard() {
             </div>
             <div className="stat-cell">
               <div className="stat-icon"> </div>
-              <div className="stat-value">{impact ? `${impact.totalWeight} kg` : '0 kg'}</div>
+              <div className="stat-value">{impact ? `${Number(impact.total_weight_kg || 0).toFixed(1)} kg` : '0 kg'}</div>
               <div className="stat-label">Total Recycled</div>
             </div>
             <div className="stat-cell">
               <div className="stat-icon"> </div>
-              <div className="stat-value">{impact ? `${impact.totalCO2Saved} kg` : '0 kg'}</div>
+              <div className="stat-value">{impact ? `${Number(impact.co2_saved_kg || 0).toFixed(1)} kg` : '0 kg'}</div>
               <div className="stat-label">CO₂ Saved</div>
             </div>
           </div>
@@ -121,8 +135,8 @@ export default function Dashboard() {
           </div>
         ) : activePickups.map(p => (
           <div key={p.id} className="pickup-row" onClick={() => navigate('/track')}>
-            <div className={`pickup-icon ${p.status === 'processing' ? 'orange' : 'yellow'}`}>
-              {p.status === 'processing' ? ' ' : ' '}
+            <div className={`pickup-icon ${p.status === 'confirmed' || p.status === 'in_transit' ? 'orange' : 'yellow'}`}>
+              {p.status === 'confirmed' || p.status === 'in_transit' ? ' ' : ' '}
             </div>
             <div className="pickup-info">
               <div className="pickup-name">{p.category}</div>
@@ -141,9 +155,9 @@ export default function Dashboard() {
             <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: 16 }}>No activity yet</div>
           ) : recentActivity.map((p, i) => (
             <div className="activity-item" key={i}>
-              <div className={`activity-dot ${p.status === 'recycled' ? 'dot-green' : 'dot-orange'}`} />
-              <div className="activity-text">{p.category} · {p.weight} kg{p.status === 'recycled' ? ' — Recycled ✓' : ''}</div>
-              <div className="activity-date">{new Date(p.createdAt).toLocaleDateString()}</div>
+              <div className={`activity-dot ${p.status === 'completed' ? 'dot-green' : 'dot-orange'}`} />
+              <div className="activity-text">{p.category} · {p.weight} kg{p.status === 'completed' ? ' — Recycled ✓' : ''}</div>
+              <div className="activity-date">{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : ''}</div>
             </div>
           ))}
         </div>

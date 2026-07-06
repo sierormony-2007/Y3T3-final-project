@@ -23,6 +23,8 @@ async function createPickup(userId, body) {
     time_window_start,
     time_window_end,
     special_note,
+    phone,
+    link,
     devices,
   } = body;
 
@@ -65,6 +67,8 @@ async function createPickup(userId, body) {
       time_window_start,
       time_window_end,
       special_note,
+      phone:  phone  || null,
+      link:   link   || null,
       total_devices,
       total_weight_kg,
       points_awarded: Math.round(points_awarded),
@@ -72,12 +76,12 @@ async function createPickup(userId, body) {
 
     await RequestDevice.bulkCreate(
       devices.map((d) => ({
-        request_id: pickup.request_id,
+        request_id:  pickup.request_id,
         category_id: d.category_id,
-        quantity: d.quantity || 1,
-        weight_kg: d.weight_kg || 0,
-        condition_: d.condition_ || 'unknown',
-        notes: d.notes,
+        quantity:    d.quantity || 1,
+        weight_kg:   d.weight_kg || 0,
+        condition_:  d.condition_ || 'unknown',
+        notes:       d.notes,
       })),
       { transaction: t }
     );
@@ -91,9 +95,9 @@ async function getPickups(userId, role) {
   return PickupRequest.findAll({
     where,
     include: [
-      { model: User, attributes: ['full_name', 'phone', 'city'] },
-      { model: Staff, attributes: ['full_name'], required: false },
-      {model: RequestDevice, include: [{ model: DeviceCategory }] },
+      { model: User,          attributes: ['full_name', 'phone', 'city'] },
+      { model: Staff,         attributes: ['full_name'], required: false },
+      { model: RequestDevice, include: [{ model: DeviceCategory }] },
     ],
     order: [['requested_at', 'DESC']],
   });
@@ -102,8 +106,8 @@ async function getPickups(userId, role) {
 async function getPickupById(id, userId, role) {
   const pickup = await PickupRequest.findByPk(id, {
     include: [
-      { model: User, attributes: ['full_name', 'phone', 'city'] },
-      { model: Staff, attributes: ['full_name'], required: false },
+      { model: User,          attributes: ['full_name', 'phone', 'city'] },
+      { model: Staff,         attributes: ['full_name'], required: false },
       { model: RequestDevice, include: [{ model: DeviceCategory }] },
     ],
   });
@@ -132,29 +136,27 @@ async function updateStatus(id, status, role) {
     if (status === 'completed' && !wasCompleted) {
       pickup.completed_at = new Date();
 
-      // Award points via a reward_transaction (User.total_points updates via its afterCreate hook)
       if (pickup.points_awarded > 0) {
         await RewardTransaction.create({
-          user_id: pickup.user_id,
-          request_id: pickup.request_id,
-          type: 'earned',
-          points: pickup.points_awarded,
+          user_id:     pickup.user_id,
+          request_id:  pickup.request_id,
+          type:        'earned',
+          points:      pickup.points_awarded,
           description: `Pickup #${pickup.request_id} completed`,
         }, { transaction: t });
       }
 
-      // Roll the pickup's totals into the user's lifetime impact stats
       const [impact] = await UserImpact.findOrCreate({
-        where: { user_id: pickup.user_id },
+        where:    { user_id: pickup.user_id },
         defaults: { user_id: pickup.user_id },
         transaction: t,
       });
       await impact.increment({
-        total_devices: pickup.total_devices,
-        total_weight_kg: pickup.total_weight_kg,
-        co2_saved_kg: Number(pickup.total_weight_kg) * 1.5, // rough estimate: 1.5kg CO2 saved per kg recycled
-        toxins_diverted_kg: Number(pickup.total_weight_kg) * 0.05, // rough estimate: 5% hazardous material content
-        total_pickups: 1,
+        total_devices:      pickup.total_devices,
+        total_weight_kg:    pickup.total_weight_kg,
+        co2_saved_kg:       Number(pickup.total_weight_kg) * 1.5,
+        toxins_diverted_kg: Number(pickup.total_weight_kg) * 0.05,
+        total_pickups:      1,
       }, { transaction: t });
     }
 
@@ -178,8 +180,10 @@ async function cancelPickup(id, userId, role) {
 }
 
 async function getHistory(userId) {
+  const where = { status: { [Op.in]: ['completed', 'cancelled'] } };
+  if (userId) where.user_id = userId;
   return PickupRequest.findAll({
-    where: { user_id: userId, status: { [Op.in]: ['completed', 'cancelled'] } },
+    where,
     include: [{ model: Staff, attributes: ['full_name'], required: false }],
     order: [['requested_at', 'DESC']],
   });

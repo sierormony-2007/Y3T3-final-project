@@ -4,10 +4,15 @@ async function createPickup(req, res, next) {
   try { res.status(201).json(await svc.createPickup(req.user.id, req.body)); } catch (err) { next(err); }
 }
 async function getPickups(req, res, next) {
-  try { res.json(await svc.getPickups(req.user.id, req.user.role)); } catch (err) { next(err); }
+  // No token → treat as an admin/staff view so all pickups are visible.
+  const userId = req.user ? req.user.id : undefined;
+  const role   = req.user ? req.user.role : 'staff';
+  try { res.json(await svc.getPickups(userId, role)); } catch (err) { next(err); }
 }
 async function getPickupById(req, res, next) {
-  try { res.json(await svc.getPickupById(req.params.id, req.user.id, req.user.role)); } catch (err) { next(err); }
+  const userId = req.user ? req.user.id : undefined;
+  const role   = req.user ? req.user.role : 'staff';
+  try { res.json(await svc.getPickupById(req.params.id, userId, role)); } catch (err) { next(err); }
 }
 async function updateStatus(req, res, next) {
   try { res.json(await svc.updateStatus(req.params.id, req.body.status, req.user.role)); } catch (err) { next(err); }
@@ -16,7 +21,8 @@ async function cancelPickup(req, res, next) {
   try { res.json(await svc.cancelPickup(req.params.id, req.user.id, req.user.role)); } catch (err) { next(err); }
 }
 async function getHistory(req, res, next) {
-  try { res.json(await svc.getHistory(req.user.id)); } catch (err) { next(err); }
+  const userId = req.user ? req.user.id : undefined;
+  try { res.json(await svc.getHistory(userId)); } catch (err) { next(err); }
 }
 
 module.exports = { createPickup, getPickups, getPickupById, updateStatus, cancelPickup, getHistory };

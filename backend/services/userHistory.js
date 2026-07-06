@@ -1,6 +1,8 @@
 const { Op } = require('sequelize');
 const { sequelize, Reward, RewardTransaction, User } = require('../models');
 
+// ── Rewards ──────────────────────────────────────────────────────────────────
+
 async function getRewards() {
   return Reward.findAll({
     where: { is_active: true },
@@ -14,19 +16,19 @@ async function redeemReward(userId, rewardId) {
   return sequelize.transaction(async (t) => {
     const [reward, user] = await Promise.all([
       Reward.findByPk(rewardId, { transaction: t }),
-      User.findByPk(userId, { transaction: t }),
+      User.findByPk(userId,    { transaction: t }),
     ]);
     if (!reward || !reward.is_active) throw { status: 404, message: 'Reward not found' };
-    if (!user) throw { status: 404, message: 'User not found' };
+    if (!user)   throw { status: 404, message: 'User not found' };
     if (reward.stock <= 0) throw { status: 400, message: 'Reward is out of stock' };
     if (user.total_points < reward.points_cost) {
       throw { status: 400, message: 'Not enough points to redeem this reward' };
     }
 
     await RewardTransaction.create({
-      user_id: userId,
-      type: 'redeemed',
-      points: -reward.points_cost,
+      user_id:     userId,
+      type:        'redeemed',
+      points:      -reward.points_cost,
       description: `Redeemed: ${reward.name}`,
     }, { transaction: t });
 
@@ -39,11 +41,15 @@ async function redeemReward(userId, rewardId) {
 }
 
 async function getRedemptionHistory(userId) {
+  const where = { type: 'redeemed' };
+  if (userId) where.user_id = userId;
   return RewardTransaction.findAll({
-    where: { user_id: userId, type: 'redeemed' },
+    where,
     order: [['created_at', 'DESC']],
   });
 }
+
+// ── Staff: add / update / delete rewards ─────────────────────────────────────
 
 async function addReward(body) {
   const { name, points_cost } = body;
@@ -57,7 +63,7 @@ async function updateReward(id, updates) {
   const reward = await Reward.findByPk(id);
   if (!reward) throw { status: 404, message: 'Reward not found' };
 
-  const allowed = ['name', 'description', 'points_cost', 'category', 'emoji', 'stock', 'is_active'];
+  const allowed = ['name', 'description', 'points_cost', 'category', 'emoji', 'image_url', 'stock', 'is_active'];
   Object.keys(updates)
     .filter((key) => allowed.includes(key))
     .forEach((key) => { reward[key] = updates[key]; });
@@ -69,9 +75,10 @@ async function updateReward(id, updates) {
 async function deleteReward(id) {
   const reward = await Reward.findByPk(id);
   if (!reward) throw { status: 404, message: 'Reward not found' };
+  // Soft-delete: set is_active = false so redemption history stays intact
   reward.is_active = false;
   await reward.save();
-  return { message: 'Reward deactivated' };
+  return { message: 'Reward deactivated successfully' };
 }
 
 module.exports = {
