@@ -23,7 +23,13 @@ function sanitize(user) {
 
 function signToken(user) {
   return jwt.sign(
-    { id: user.user_id, email: user.email, role: user.role || 'user' },
+    {
+      id: user.user_id,
+      email: user.email,
+      role: user.role || 'user',
+      // Only relevant for role='staff': 'admin' vs 'operator'.
+      staff_role: user.staff_role || null,
+    },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );

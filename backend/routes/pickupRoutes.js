@@ -146,7 +146,7 @@ router.delete('/:id', auth, cancelPickup);
  * /api/pickups/{id}/status:
  *   patch:
  *     tags: [Pickups]
- *     summary: Update pickup status (staff only)
+ *     summary: Update pickup status (staff only — operators can only Accept a pending request; the rest is admin-only)
  *     security:
  *       - bearerAuth: []
  *     parameters:

@@ -14,6 +14,7 @@ const impactRoutes    = require('./routes/impactRoutes');
 const articleRoutes   = require('./routes/articleRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const categoryRoutes  = require('./routes/deviceCategoryRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const errorMiddleware = require('./middleware/errorMiddleware');
 
 const app  = express();
@@ -105,6 +106,7 @@ app.use('/api/impact',    impactRoutes);
 app.use('/api/articles',  articleRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) =>

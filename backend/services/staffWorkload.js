@@ -121,7 +121,7 @@ async function getPickupById(id, userId, role) {
   return pickup;
 }
 
-async function updateStatus(id, status, role) {
+async function updateStatus(id, status, role, staffRole) {
   const validStatuses = ['pending', 'confirmed', 'in_transit', 'completed', 'cancelled'];
   if (!validStatuses.includes(status)) {
     throw { status: 400, message: `status must be one of: ${validStatuses.join(', ')}` };
@@ -129,10 +129,20 @@ async function updateStatus(id, status, role) {
   if (!isStaff(role)) {
     throw { status: 403, message: 'Forbidden: staff only' };
   }
+  const isAdmin = staffRole === 'admin';
 
   return sequelize.transaction(async (t) => {
     const pickup = await PickupRequest.findByPk(id, { transaction: t });
     if (!pickup) throw { status: 404, message: 'Pickup request not found' };
+
+    // Operator staff can only Accept a pending request (pending -> confirmed).
+    // Marking it picked up, completing it, or cancelling it is admin-only.
+    if (!isAdmin) {
+      const isAcceptAction = pickup.status === 'pending' && status === 'confirmed';
+      if (!isAcceptAction) {
+        throw { status: 403, message: 'Forbidden: operator staff can only accept pending requests' };
+      }
+    }
 
     const wasConfirmedOrBeyond = pickup.status !== 'pending';
     pickup.status = status;
@@ -173,12 +183,17 @@ async function updateStatus(id, status, role) {
   });
 }
 
-async function cancelPickup(id, userId, role) {
+async function cancelPickup(id, userId, role, staffRole) {
   return sequelize.transaction(async (t) => {
     const pickup = await PickupRequest.findByPk(id, { transaction: t });
     if (!pickup) throw { status: 404, message: 'Pickup request not found' };
     if (!isStaff(role) && pickup.user_id !== userId) {
       throw { status: 403, message: 'Forbidden: not your pickup request' };
+    }
+    // Operator staff can only Accept requests — cancelling is admin-only
+    // (the requesting user can still cancel their own pickup).
+    if (isStaff(role) && staffRole !== 'admin') {
+      throw { status: 403, message: 'Forbidden: operator staff can only accept pending requests' };
     }
     if (['completed', 'cancelled'].includes(pickup.status)) {
       throw { status: 400, message: `Cannot cancel a pickup that is already ${pickup.status}` };

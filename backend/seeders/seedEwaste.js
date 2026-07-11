@@ -22,7 +22,8 @@ async function seed() {
     { full_name: 'Sreynich Lim', email: 'sreynich@gmail.com',   password_hash: USER_PASSWORD, phone: '070345678', address: 'No. 7, St. 60, Chamkar Mon', city: 'Phnom Penh', latitude: 11.5476, longitude: 104.9282, total_points: 0, role: 'user' },
     { full_name: 'Visal Kong',   email: 'visal.kong@gmail.com', password_hash: USER_PASSWORD, phone: '015234567', address: 'Flat 2B, Olympia City, 7 Makara', city: 'Phnom Penh', latitude: 11.5590, longitude: 104.9220, total_points: 0, role: 'user' },
     // Staff login account — logs into /staff (StaffDashboard) and can manage the Rewards Store
-    { full_name: 'EcoRecycle Staff Admin', email: 'staff@ecorecycle.com', password_hash: STAFF_PASSWORD, phone: '010000000', address: 'EcoRecycle HQ', city: 'Phnom Penh', latitude: 11.5564, longitude: 104.9282, total_points: 0, role: 'staff' },
+    { full_name: 'EcoRecycle Staff Admin', email: 'staff@ecorecycle.com', password_hash: STAFF_PASSWORD, phone: '010000000', address: 'EcoRecycle HQ', city: 'Phnom Penh', latitude: 11.5564, longitude: 104.9282, total_points: 0, role: 'staff', staff_role: 'admin' },
+    { full_name: 'EcoRecycle Staff Operator', email: 'operator@ecorecycle.com', password_hash: STAFF_PASSWORD, phone: '010000001', address: 'EcoRecycle HQ', city: 'Phnom Penh', latitude: 11.5564, longitude: 104.9282, total_points: 0, role: 'staff', staff_role: 'operator' },
   ]);
 
   // DEVICE CATEGORIES

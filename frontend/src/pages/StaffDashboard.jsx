@@ -19,6 +19,11 @@ export default function StaffDashboard() {
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState('');
 
+  // Current logged-in staff member — used to gate admin-only actions
+  // (adding/deleting Rewards Store items) away from regular operators.
+  const [me, setMe] = useState(JSON.parse(localStorage.getItem('currentUser')) || {});
+  const isAdmin = me.role === 'staff' && me.staff_role === 'admin';
+
   // ── Rewards Store management ──────────────────────────────────────────
   const [rewards, setRewards] = useState([]);
   const [rewardsLoading, setRewardsLoading] = useState(true);
@@ -34,6 +39,10 @@ export default function StaffDashboard() {
     .finally(() => setRewardsLoading(false));
 
   useEffect(() => {
+    api.auth.me()
+      .then(m => { setMe(m); localStorage.setItem('currentUser', JSON.stringify(m)); })
+      .catch(console.error);
+
     api.pickups.list()
       .then(setPickups)
       .catch(console.error)
@@ -218,6 +227,8 @@ export default function StaffDashboard() {
         </div>
 
         <div className="card" style={{ marginBottom:16 }}>
+          {(isAdmin || editingId) ? (
+            <>
           <div style={{ fontWeight:600, marginBottom:12 }}>{editingId ? 'Edit Reward' : 'Add New Reward'}</div>
 
           {rewardMsg && (
@@ -268,6 +279,12 @@ export default function StaffDashboard() {
               <button className="action-btn" style={{ padding:'10px 20px' }} onClick={cancelRewardForm}>Cancel</button>
             )}
           </div>
+            </>
+          ) : (
+            <div style={{ color:'var(--text-secondary)', fontSize:13 }}>
+              Only admin staff can add new rewards. You can still edit existing items below.
+            </div>
+          )}
         </div>
 
         {rewardsLoading ? (
@@ -303,7 +320,9 @@ export default function StaffDashboard() {
                     <td style={{ padding:'10px 16px', fontSize:13 }}>{r.stock}</td>
                     <td style={{ padding:'10px 16px', textAlign:'right' }}>
                       <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, marginRight:8 }} onClick={() => startEditReward(r)}>Edit</button>
-                      <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, background:'var(--badge-orange)' }} onClick={() => handleDeleteReward(r)}>Delete</button>
+                      {isAdmin && (
+                        <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, background:'var(--badge-orange)' }} onClick={() => handleDeleteReward(r)}>Delete</button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -353,12 +372,16 @@ export default function StaffDashboard() {
               </div>
             </div>
             <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:10 }}>
-              <button className="action-btn"
-                style={{ padding:'10px 14px', fontSize:12, minWidth:120 }}
-                disabled={!NEXT_STATUS[pickup.status] || updating === pickup.request_id}
-                onClick={() => handleNextStatus(pickup)}>
-                {updating === pickup.request_id ? '…' : ACTION_LABEL[pickup.status]}
-              </button>
+              {(isAdmin || pickup.status === 'pending') ? (
+                <button className="action-btn"
+                  style={{ padding:'10px 14px', fontSize:12, minWidth:120 }}
+                  disabled={!NEXT_STATUS[pickup.status] || updating === pickup.request_id}
+                  onClick={() => handleNextStatus(pickup)}>
+                  {updating === pickup.request_id ? '…' : ACTION_LABEL[pickup.status]}
+                </button>
+              ) : (
+                <span style={{ fontSize:11, color:'var(--text-secondary)' }}>Admin only</span>
+              )}
               {pickup.status !== 'pending' && (
                 <span style={{ fontSize:12, color:'var(--green-bright)' }}>
                   +{pickup.points_awarded || 0} pts awarded
