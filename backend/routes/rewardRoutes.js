@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const auth    = require('../middleware/authMiddleware');
 const role    = require('../middleware/roleMiddleware');
+const { adminOnly } = require('../middleware/roleMiddleware');
 const {
   getRewards, redeemReward, getRedemptionHistory,
   addReward, updateReward, deleteReward,
@@ -54,7 +55,7 @@ const {
  *                 $ref: '#/components/schemas/Reward'
  *   post:
  *     tags: [Rewards]
- *     summary: Add a new reward — STAFF ONLY
+ *     summary: Add a new reward — ADMIN STAFF ONLY
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -74,10 +75,10 @@ const {
  *       201:
  *         description: Reward created
  *       403:
- *         description: Forbidden – staff only
+ *         description: Forbidden – admin staff only
  */
 router.get('/',  getRewards);
-router.post('/', auth, role('staff'), addReward);
+router.post('/', auth, role('staff'), adminOnly, addReward);
 
 /**
  * @swagger
@@ -156,7 +157,7 @@ router.get('/history', getRedemptionHistory);
  *         description: Reward not found
  *   delete:
  *     tags: [Rewards]
- *     summary: Deactivate a reward — STAFF ONLY
+ *     summary: Deactivate a reward — ADMIN STAFF ONLY
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -168,11 +169,11 @@ router.get('/history', getRedemptionHistory);
  *       200:
  *         description: Reward deactivated
  *       403:
- *         description: Forbidden – staff only
+ *         description: Forbidden – admin staff only
  *       404:
  *         description: Reward not found
  */
 router.patch('/:id',  auth, role('staff'), updateReward);
-router.delete('/:id', auth, role('staff'), deleteReward);
+router.delete('/:id', auth, role('staff'), adminOnly, deleteReward);
 
 module.exports = router;

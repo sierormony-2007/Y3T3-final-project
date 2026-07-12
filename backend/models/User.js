@@ -49,6 +49,15 @@ const User = sequelize.define('User', {
   defaultValue: 'user',
 },
 
+  // Only meaningful when role = 'staff'. 'admin' can manage the Rewards
+  // Store (add/delete items); 'operator' is a regular staff member and
+  // cannot. Left null for role = 'user'.
+  staff_role: {
+    type: DataTypes.ENUM('operator', 'admin'),
+    allowNull: true,
+    defaultValue: null,
+  },
+
 }, {
   tableName: 'users',
   timestamps: true,

@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { sequelize, Reward, RewardTransaction, User } = require('../models');
+const { sequelize, Reward, RewardTransaction, User, Notification } = require('../models');
 
 // ── Rewards ──────────────────────────────────────────────────────────────────
 
@@ -34,6 +34,15 @@ async function redeemReward(userId, rewardId) {
 
     reward.stock -= 1;
     await reward.save({ transaction: t });
+
+    // Notify the user their item is ready — shown in the bell dropdown
+    // and, once read, marked off their unread count.
+    await Notification.create({
+      user_id: userId,
+      title: 'Reward Redeemed! 🎉',
+      message: `You can pick up your "${reward.name}" from the collection point. Bring your account details for verification.`,
+      type: 'reward',
+    }, { transaction: t });
 
     await user.reload({ transaction: t });
     return { reward, remaining_points: user.total_points };

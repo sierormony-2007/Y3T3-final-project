@@ -78,4 +78,10 @@ export const api = {
     list: ()    => request('GET', '/articles'),
     get:  (id)  => request('GET', `/articles/${id}`),
   },
+  notifications: {
+    list:        ()     => request('GET',   '/notifications'),
+    unreadCount: ()     => request('GET',   '/notifications/unread-count'),
+    markRead:    (id)   => request('PATCH', `/notifications/${id}/read`),
+    markAllRead: ()     => request('PATCH', '/notifications/read-all'),
+  },
 };

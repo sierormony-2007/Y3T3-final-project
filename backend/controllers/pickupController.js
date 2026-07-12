@@ -15,10 +15,10 @@ async function getPickupById(req, res, next) {
   try { res.json(await svc.getPickupById(req.params.id, userId, role)); } catch (err) { next(err); }
 }
 async function updateStatus(req, res, next) {
-  try { res.json(await svc.updateStatus(req.params.id, req.body.status, req.user.role)); } catch (err) { next(err); }
+  try { res.json(await svc.updateStatus(req.params.id, req.body.status, req.user.role, req.user.staff_role)); } catch (err) { next(err); }
 }
 async function cancelPickup(req, res, next) {
-  try { res.json(await svc.cancelPickup(req.params.id, req.user.id, req.user.role)); } catch (err) { next(err); }
+  try { res.json(await svc.cancelPickup(req.params.id, req.user.id, req.user.role, req.user.staff_role)); } catch (err) { next(err); }
 }
 async function getHistory(req, res, next) {
   const userId = req.user ? req.user.id : undefined;
