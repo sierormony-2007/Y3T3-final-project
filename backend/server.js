@@ -97,6 +97,12 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   swaggerOptions: { persistAuthorization: true },
 }));
 
+
+// app.use(cors({
+//   origin: 'https://y3-t3-final-project.vercel.app',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+// }));
+
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use('/api/auth',      authRoutes);
 app.use('/api/users',     userRoutes);
