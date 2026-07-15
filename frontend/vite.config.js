@@ -8,6 +8,7 @@ export default defineConfig({
       '/api': {
         target: 'https://ewaste-db.onrender.com',
         changeOrigin: true,
+        secure: true,
       },
     },
   },
