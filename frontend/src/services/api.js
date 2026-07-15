@@ -23,7 +23,7 @@ async function request(method, path, body) {
     });
   } catch (networkErr) {
     console.error('[api] network error:', networkErr);
-    throw new Error('Cannot connect to server. Make sure the backend is running on port 3001 and the frontend dev server (vite) is running too — open http://localhost:5173, not localhost:3001.');
+    throw new Error('Cannot connect to server. The backend at https://ewaste-db.onrender.com may be sleeping (Render free tier spins down after inactivity). Please wait a moment and try again.');
   }
 
   console.log(`[api] ${method} ${url} -> ${res.status}`);

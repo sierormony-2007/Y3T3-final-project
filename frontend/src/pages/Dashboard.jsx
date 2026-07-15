@@ -37,6 +37,8 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        const currentUserId = currentUser.user_id;
         const [me, myPickups, myImpact] = await Promise.all([
           api.auth.me(),
           api.pickups.list(),
@@ -44,7 +46,12 @@ export default function Dashboard() {
         ]);
         setUser(me);
         localStorage.setItem('currentUser', JSON.stringify(me));
-        setPickups((Array.isArray(myPickups) ? myPickups : myPickups.pickups || []).map(pickupSummary));
+        const allPickups = Array.isArray(myPickups) ? myPickups : myPickups.pickups || [];
+        // Filter to only show the current user's pickups (guards against backend returning all)
+        const myOnly = currentUserId
+          ? allPickups.filter(p => p.user_id === currentUserId)
+          : allPickups;
+        setPickups(myOnly.map(pickupSummary));
         setImpact(myImpact);
       } catch (err) {
         console.error(err);

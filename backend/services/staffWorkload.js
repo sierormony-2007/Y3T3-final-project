@@ -231,8 +231,11 @@ async function cancelPickup(id, userId, role, staffRole) {
 }
 
 async function getHistory(userId) {
-  const where = { status: { [Op.in]: ['completed', 'cancelled'] } };
-  if (userId) where.user_id = userId;
+  if (!userId) throw { status: 401, message: 'Authentication required' };
+  const where = {
+    user_id: userId,
+    status: { [Op.in]: ['completed', 'cancelled'] },
+  };
   return PickupRequest.findAll({
     where,
     include: [{ model: Staff, attributes: ['full_name'], required: false }],

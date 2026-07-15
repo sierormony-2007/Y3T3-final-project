@@ -4,9 +4,9 @@ async function createPickup(req, res, next) {
   try { res.status(201).json(await svc.createPickup(req.user.id, req.body)); } catch (err) { next(err); }
 }
 async function getPickups(req, res, next) {
-  // No token → treat as an admin/staff view so all pickups are visible.
-  const userId = req.user ? req.user.id : undefined;
-  const role   = req.user ? req.user.role : 'staff';
+  if (!req.user) return res.status(401).json({ message: 'Authentication required' });
+  const userId = req.user.id;
+  const role   = req.user.role;
   try { res.json(await svc.getPickups(userId, role)); } catch (err) { next(err); }
 }
 async function getPickupById(req, res, next) {

@@ -55,9 +55,16 @@ export default function TrackPickups() {
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+    const currentUserId = currentUser.user_id;
     api.pickups.list()
       .then(data => {
-        const mapped = data.map(mapPickup);
+        const all = Array.isArray(data) ? data : [];
+        // Filter to only show the current user's pickups
+        const myOnly = currentUserId
+          ? all.filter(p => p.user_id === currentUserId)
+          : all;
+        const mapped = myOnly.map(mapPickup);
         setPickups(mapped);
         if (mapped.length > 0) setExpanded(mapped[0].id);
       })

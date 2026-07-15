@@ -88,7 +88,7 @@ const {
  *         description: List of pickups
  */
 router.post('/', auth, createPickup);
-router.get('/',  getPickups);
+router.get('/',  auth, getPickups);
 
 /**
  * @swagger
@@ -102,7 +102,7 @@ router.get('/',  getPickups);
  *       200:
  *         description: Pickup history
  */
-router.get('/history', getHistory);
+router.get('/history', auth, getHistory);
 
 /**
  * @swagger
