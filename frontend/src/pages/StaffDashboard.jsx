@@ -3,12 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../component/Header.jsx';
 import { api } from '../services/api.js';
 
+const getFallbackImage = (name) => {
+  const map = {
+    'Strawberry Tote Bag': '/rewards/strawberry-tote-bag.jpg',
+    'Rosca Insulated Bottle': '/rewards/rosca-water-bottle.jpg',
+    'Bamboo Water Bottle': '/rewards/rosca-water-bottle.jpg',
+    'Reusable Coffee Cup': '/rewards/coffee-cup.jpg',
+    'Organic Cotton Tote Bag': '/rewards/strawberry-tote-bag.jpg',
+    '$5 Brown Coffee Voucher': '/rewards/coffee-voucher.jpg',
+    '1-Month Aeon Mall Parking': '/rewards/parking-voucher.jpg',
+    'Recycled Notebook Set': '/rewards/Rifle Paper Co_ (@riflepaperco) • Instagram photos and videos.jpg',
+    'Recycled Notebook': '/rewards/Rifle Paper Co_ (@riflepaperco) • Instagram photos and videos.jpg',
+    'Plant-Based Cleaning Kit': '/rewards/coffee-cup.jpg',
+    'Seed Bomb Set': '/rewards/strawberry-tote-bag.jpg',
+    'Compostable Phone Case': '/rewards/parking-voucher.jpg',
+    'Solar Phone Charger': '/rewards/coffee-voucher.jpg',
+    'Beeswax Food Wraps (3-pack)': '/rewards/coffee-cup.jpg'
+  };
+  return map[name] || '/rewards/rosca-water-bottle.jpg';
+};
+
 const STATUS_LABELS = { pending:'Pending', confirmed:'Confirmed', in_transit:'Picked Up', completed:'Recycled ✓', cancelled:'Cancelled' };
 const STATUS_CLASS  = { pending:'badge badge-pending', confirmed:'badge badge-processing', in_transit:'badge badge-processing', completed:'badge badge-recycled', cancelled:'badge badge-cancelled' };
 const NEXT_STATUS   = { pending:'confirmed', confirmed:'in_transit', in_transit:'completed' };
 const ACTION_LABEL  = { pending:'Accept', confirmed:'Mark Picked Up', in_transit:'Complete', completed:'Done', cancelled:'Cancelled' };
 
-const EMPTY_REWARD_FORM = { name: '', description: '', points_cost: '', category: '', emoji: '🎁', image_url: '', stock: '' };
+const EMPTY_REWARD_FORM = { name: '', description: '', points_cost: '', category: '', emoji: '', image_url: '', stock: '' };
 
 export default function StaffDashboard() {
   const navigate  = useNavigate();
@@ -82,7 +102,7 @@ export default function StaffDashboard() {
 
   const handleSaveReward = async () => {
     if (!rewardForm.name || !rewardForm.points_cost) {
-      setRewardMsg('⚠️ Name and points cost are required');
+      setRewardMsg('Name and points cost are required');
       return;
     }
     setSavingReward(true);
@@ -99,15 +119,15 @@ export default function StaffDashboard() {
     try {
       if (editingId) {
         await api.rewards.update(editingId, body);
-        setRewardMsg('✅ Reward updated');
+        setRewardMsg('Reward updated');
       } else {
         await api.rewards.add(body);
-        setRewardMsg('✅ Reward added');
+        setRewardMsg('Reward added');
       }
       await loadRewards();
       cancelRewardForm();
     } catch (err) {
-      setRewardMsg(`⚠️ ${err.message}`);
+      setRewardMsg(`Error: ${err.message}`);
     } finally {
       setSavingReward(false);
     }
@@ -232,10 +252,10 @@ export default function StaffDashboard() {
           <div style={{ fontWeight:600, marginBottom:12 }}>{editingId ? 'Edit Reward' : 'Add New Reward'}</div>
 
           {rewardMsg && (
-            <div style={{ background: rewardMsg.startsWith('✅') ? 'var(--green-glow)' : 'rgba(234,88,12,0.15)',
-              border: `1px solid ${rewardMsg.startsWith('✅') ? 'var(--green-primary)' : 'var(--badge-orange)'}`,
+            <div style={{ background: rewardMsg.startsWith('Reward') ? 'var(--green-glow)' : 'rgba(234,88,12,0.15)',
+              border: `1px solid ${rewardMsg.startsWith('Reward') ? 'var(--green-primary)' : 'var(--badge-orange)'}`,
               borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 12,
-              color: rewardMsg.startsWith('✅') ? 'var(--green-bright)' : 'var(--badge-orange)', fontSize:13 }}>
+              color: rewardMsg.startsWith('Reward') ? 'var(--green-bright)' : 'var(--badge-orange)', fontSize:13 }}>
               {rewardMsg}
             </div>
           )}
@@ -258,8 +278,8 @@ export default function StaffDashboard() {
               <input className="form-input" type="number" name="stock" value={rewardForm.stock} onChange={handleRewardFormChange} placeholder="50" />
             </div>
             <div className="form-group">
-              <label className="form-label">Emoji (fallback icon)</label>
-              <input className="form-input" name="emoji" value={rewardForm.emoji} onChange={handleRewardFormChange} placeholder="🎁" />
+              <label className="form-label">Emoji / Icon (optional)</label>
+              <input className="form-input" name="emoji" value={rewardForm.emoji} onChange={handleRewardFormChange} placeholder="Leave blank to use image" />
             </div>
             <div className="form-group">
               <label className="form-label">Image URL (optional)</label>
@@ -310,9 +330,9 @@ export default function StaffDashboard() {
                 {rewards.map(r => (
                   <tr key={r.reward_id} style={{ borderTop:'1px solid var(--border)' }}>
                     <td style={{ padding:'10px 16px' }}>
-                      {r.image_url
-                        ? <img src={r.image_url} alt={r.name} style={{ width:36, height:36, borderRadius:6, objectFit:'cover' }} />
-                        : <span style={{ fontSize:22 }}>{r.emoji || '🎁'}</span>}
+                      {(r.image_url && r.image_url !== 'null' && r.image_url.trim() !== '') || getFallbackImage(r.name)
+                        ? <img src={(r.image_url && r.image_url !== 'null' && r.image_url.trim() !== '') ? r.image_url : getFallbackImage(r.name)} alt={r.name} style={{ width:36, height:36, borderRadius:6, objectFit:'cover' }} />
+                        : <span style={{ fontSize:13, color:'var(--text-secondary)' }}>No image</span>}
                     </td>
                     <td style={{ padding:'10px 16px', fontSize:13 }}>{r.name}</td>
                     <td style={{ padding:'10px 16px', fontSize:13 }}>{r.category}</td>
@@ -348,7 +368,7 @@ export default function StaffDashboard() {
           return (
           <div key={pickup.request_id} className="pickup-row" style={{ cursor:'default' }}>
             <div className={`pickup-icon ${pickup.status==='completed'?'green':pickup.status==='in_transit'?'orange':pickup.status==='confirmed'?'orange':'yellow'}`}>
-              {pickup.status==='completed'?'✓':pickup.status==='in_transit'?'📦':pickup.status==='confirmed'?'🛠':'🚚'}
+              {pickup.status==='completed'?'OK':pickup.status==='in_transit'?'Transit':pickup.status==='confirmed'?'Set':'New'}
             </div>
             <div className="pickup-info" style={{ flex:1 }}>
               <div className="pickup-name">{pickup.User?.full_name || 'Unknown user'} · {categoryLabel}</div>
@@ -361,12 +381,12 @@ export default function StaffDashboard() {
               <div style={{ display:'flex', gap:14, flexWrap:'wrap', marginTop:8, alignItems:'center' }}>
                 {pickup.phone && (
                   <a href={`tel:${pickup.phone}`} style={{ fontSize:12, color:'var(--green-bright)', textDecoration:'none' }}>
-                    📞 {pickup.phone}
+                    {pickup.phone}
                   </a>
                 )}
                 {pickup.link && (
                   <a href={pickup.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:'var(--green-bright)', textDecoration:'none' }}>
-                    📍 View on map
+                    View on map
                   </a>
                 )}
               </div>

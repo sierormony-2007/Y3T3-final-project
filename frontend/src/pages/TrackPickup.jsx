@@ -14,7 +14,7 @@ const STATUS_LABEL = {
   pending:    'Pending',
   confirmed:  'Confirmed',
   in_transit:  'Picked Up',
-  completed:   'Recycled ✓',
+  completed:   'Recycled',
   cancelled:   'Cancelled',
 };
 const STATUS_STEP = { pending: 1, confirmed: 2, in_transit: 3, completed: 5, cancelled: 1 };
@@ -95,7 +95,7 @@ export default function TrackPickups() {
             <div style={{ display:'flex', alignItems:'center', gap:14, cursor:'pointer' }}
               onClick={() => setExpanded(prev => prev === p.id ? null : p.id)}>
               <div className={`pickup-icon ${p.status === 'completed' ? 'green' : (p.status === 'confirmed' || p.status === 'in_transit') ? 'orange' : 'yellow'}`}>
-                {p.status === 'completed' ? '' : (p.status === 'confirmed' || p.status === 'in_transit') ? '' : ''}
+                {p.status === 'completed' ? 'Done' : (p.status === 'confirmed' || p.status === 'in_transit') ? 'Active' : 'Wait'}
               </div>
               <div className="pickup-info">
                 <div className="pickup-name">

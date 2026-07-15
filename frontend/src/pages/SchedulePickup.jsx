@@ -24,7 +24,7 @@ export default function SchedulePickup() {
   const [form, setForm] = useState({
     category: null, description: '', itemCount: 1,
     weight: '', date: '', timeSlot: '10:00 – 12:00',
-    street: '', city: '', postal: '', notes: '',
+    district: '', city: '', postal: '', notes: '',
     phone: '', mapLink: '',
   });
   const [submitted, setSubmitted] = useState(false);
@@ -44,11 +44,11 @@ export default function SchedulePickup() {
       e.weight = 'Please enter a valid weight.';
     else if (parseFloat(form.weight) < 5)
       e.weight = 'Minimum weight is 5 kg for pickup.';
-    if (!form.date)   e.date   = 'Please choose a pickup date.';
-    if (!form.street) e.street = 'Please enter your street address.';
-    if (!form.city)   e.city   = 'Please enter your city.';
-    if (!form.postal) e.postal = 'Please enter your postal code.';
-    if (!form.phone)  e.phone  = 'Please enter a contact phone number.';
+    if (!form.date)     e.date     = 'Please choose a pickup date.';
+    if (!form.district) e.district = 'Please enter your district.';
+    if (!form.city)     e.city     = 'Please enter your city.';
+    if (!form.postal)   e.postal   = 'Please enter your postal code.';
+    if (!form.phone)    e.phone    = 'Please enter a contact phone number.';
     else if (!/^[0-9+\-\s]{8,}$/.test(form.phone)) e.phone = 'Please enter a valid phone number.';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -61,7 +61,7 @@ export default function SchedulePickup() {
     try {
     const [start, end] = form.timeSlot.split(/\s+[–-]\s+/);
       await api.pickups.create({
-        pickup_address: `${form.street}, ${form.city}, ${form.postal}`,
+        pickup_address: `${form.district}, ${form.city}, ${form.postal}`,
         preferred_date: form.date,
         time_window_start: `${start}:00`,
         time_window_end: `${end}:00`,
@@ -93,10 +93,9 @@ export default function SchedulePickup() {
         <Header />
         <div className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ textAlign: 'center', maxWidth: 360 }}>
-            <div style={{ fontSize: 64, marginBottom: 20 }}> </div>
-            <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Pickup Scheduled!</div>
+            <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Recycle Request Submitted!</div>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-              Your {form.category} pickup is confirmed for {form.date}, {form.timeSlot}. Redirecting…
+              Your {form.category} recycle request is confirmed for {form.date}, {form.timeSlot}. Redirecting...
             </div>
           </div>
         </div>
@@ -110,7 +109,7 @@ export default function SchedulePickup() {
       <div className="main-content">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
           <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
-          <div className="page-title" style={{ marginBottom: 0 }}>Schedule Pickup</div>
+          <div className="page-title" style={{ marginBottom: 0 }}>Request Recycle</div>
         </div>
 
         {apiError && (
@@ -141,7 +140,7 @@ export default function SchedulePickup() {
             </div>
             <div className="form-group">
               <label className="form-label">Description (optional)</label>
-              <textarea className="form-textarea" placeholder="e.g. Dell laptop, cracked screen…"
+              <textarea className="form-textarea" placeholder="e.g. Dell laptop, cracked screen..."
                 value={form.description} onChange={e => set('description', e.target.value)} />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -163,7 +162,7 @@ export default function SchedulePickup() {
                 value={form.weight} onChange={e => set('weight', e.target.value)} />
               {errors.weight && <div style={{ color: 'var(--badge-orange)', fontSize: 11, marginTop: 4 }}>{errors.weight}</div>}
               <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-secondary)' }}>
-                ♻ Estimated eco points:{' '}
+                Estimated eco points:{' '}
                 <span style={{ color: 'var(--green-bright)', fontWeight: 600 }}>
                   {estimatedPts != null ? `${estimatedPts} pts` : '— pts'}
                 </span>
@@ -196,21 +195,23 @@ export default function SchedulePickup() {
           <div className="card" style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>4 · Pickup Address</div>
             <div className="form-group">
-              <label className="form-label">Street Address</label>
-              <input className="form-input" type="text" placeholder="12 Green Ln"
-                value={form.street} onChange={e => set('street', e.target.value)} />
-              {errors.street && <div style={{ color: 'var(--badge-orange)', fontSize: 11, marginTop: 4 }}>{errors.street}</div>}
+              <label className="form-label">District</label>
+              <input className="form-input" type="text" placeholder="e.g. Daun Penh"
+                value={form.district} onChange={e => set('district', e.target.value)} />
+              {errors.district && <div style={{ color: 'var(--badge-orange)', fontSize: 11, marginTop: 4 }}>{errors.district}</div>}
             </div>
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">City</label>
                 <input className="form-input" type="text" placeholder="Phnom Penh"
                   value={form.city} onChange={e => set('city', e.target.value)} />
+                {errors.city && <div style={{ color: 'var(--badge-orange)', fontSize: 11, marginTop: 4 }}>{errors.city}</div>}
               </div>
               <div className="form-group">
                 <label className="form-label">Postal Code</label>
                 <input className="form-input" type="text" placeholder="12000"
                   value={form.postal} onChange={e => set('postal', e.target.value)} />
+                {errors.postal && <div style={{ color: 'var(--badge-orange)', fontSize: 11, marginTop: 4 }}>{errors.postal}</div>}
               </div>
             </div>
             <div className="form-group">
@@ -232,13 +233,13 @@ export default function SchedulePickup() {
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Special Instructions (optional)</label>
-              <textarea className="form-textarea" placeholder="e.g. Ring bell twice, leave at gate…"
+              <textarea className="form-textarea" placeholder="e.g. Ring bell twice, leave at gate..."
                 value={form.notes} onChange={e => set('notes', e.target.value)} />
             </div>
           </div>
 
           <button className="btn-submit" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Submitting…' : 'Confirm Pickup Request'}
+            {loading ? 'Submitting...' : 'Confirm Recycle Request'}
           </button>
           <button className="btn-secondary" onClick={() => navigate('/dashboard')}>Cancel</button>
         </div>

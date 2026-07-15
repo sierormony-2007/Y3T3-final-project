@@ -29,7 +29,7 @@ export const ACTIVE_PICKUPS = [
     weight: 2.6,
     date: "2026-06-02",
     status: "processing",
-    icon: "⚙️",
+    icon: "...",
     iconClass: "orange",
   },
   {
@@ -38,7 +38,7 @@ export const ACTIVE_PICKUPS = [
     weight: 7.5,
     date: "2026-06-20",
     status: "pending",
-    icon: "⏱",
+    icon: "...",
     iconClass: "yellow",
   },
 ];
@@ -55,7 +55,7 @@ export const RECENT_ACTIVITY = [
     color: "dot-orange",
   },
   {
-    text: "Laptop / Computer · 8.4 kg — Recycled ✓",
+    text: "Laptop / Computer · 8.4 kg — Recycled",
     date: "5/14/2026",
     color: "dot-green",
   },
@@ -72,16 +72,16 @@ export const MONTHLY = [
 ];
 
 export const DEVICES = [
-  { icon: "💻", name: "Laptop / Computer", kg: 8.4, pct: 31 },
-  { icon: "🖨", name: "Printer / Scanner", kg: 7.5, pct: 28 },
-  { icon: "📱", name: "Smartphone / Tablet", kg: 2.6, pct: 10 },
+  { name: "Laptop / Computer", kg: 8.4, pct: 31 },
+  { name: "Printer / Scanner", kg: 7.5, pct: 28 },
+  { name: "Smartphone / Tablet", kg: 2.6, pct: 10 },
 ];
 
 export const ACHIEVEMENTS = [
-  { icon: "🥇", name: "First Pickup", sub: "Completed", locked: false },
-  { icon: "⭐", name: "Gold Member", sub: "1,000+ pts", locked: false },
-  { icon: "🌳", name: "50 kg Club", sub: "26.9 / 50 kg", locked: false },
-  { icon: "💎", name: "Platinum", sub: "2,000 pts needed", locked: true },
+  { name: "First Pickup", sub: "Completed", locked: false },
+  { name: "Gold Member", sub: "1,000+ pts", locked: false },
+  { name: "50 kg Club", sub: "26.9 / 50 kg", locked: false },
+  { name: "Platinum", sub: "2,000 pts needed", locked: true },
 ];
 
 // Rewards Store
@@ -140,10 +140,10 @@ export const STEPS = [
   "Scheduled",
   "Picked Up",
   "Processing",
-  "Recycled ✓",
+  "Recycled",
 ];
 
-export const STEP_ICONS = ["⏱", "📅", "🚛", "⚙️", "✅"];
+export const STEP_ICONS = ["1", "2", "3", "4", "5"];
 
 export const PICKUPS = [
   {
@@ -153,11 +153,11 @@ export const PICKUPS = [
     weight: 8.4,
     items: 2,
     date: "2026-05-14",
-    time: "10:00–12:00",
+    time: "10:00-12:00",
     address: "12 Green Ln, Eco City, 10001",
     stepDone: 5,
     pts: 336,
-    icon: "✅",
+    icon: "done",
     iconClass: "green",
   },
 ];

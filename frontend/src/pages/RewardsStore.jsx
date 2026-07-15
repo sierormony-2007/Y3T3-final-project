@@ -2,6 +2,26 @@ import { useState, useEffect } from 'react';
 import Header from '../component/Header.jsx';
 import { api } from '../services/api.js';
 
+const getFallbackImage = (name) => {
+  const map = {
+    'Strawberry Tote Bag': '/rewards/strawberry-tote-bag.jpg',
+    'Rosca Insulated Bottle': '/rewards/rosca-water-bottle.jpg',
+    'Bamboo Water Bottle': '/rewards/rosca-water-bottle.jpg',
+    'Reusable Coffee Cup': '/rewards/coffee-cup.jpg',
+    'Organic Cotton Tote Bag': '/rewards/strawberry-tote-bag.jpg',
+    '$5 Brown Coffee Voucher': '/rewards/coffee-voucher.jpg',
+    '1-Month Aeon Mall Parking': '/rewards/parking-voucher.jpg',
+    'Recycled Notebook Set': '/rewards/Rifle Paper Co_ (@riflepaperco) • Instagram photos and videos.jpg',
+    'Recycled Notebook': '/rewards/Rifle Paper Co_ (@riflepaperco) • Instagram photos and videos.jpg',
+    'Plant-Based Cleaning Kit': '/rewards/coffee-cup.jpg',
+    'Seed Bomb Set': '/rewards/strawberry-tote-bag.jpg',
+    'Compostable Phone Case': '/rewards/parking-voucher.jpg',
+    'Solar Phone Charger': '/rewards/coffee-voucher.jpg',
+    'Beeswax Food Wraps (3-pack)': '/rewards/coffee-cup.jpg'
+  };
+  return map[name] || '/rewards/rosca-water-bottle.jpg'; // Always return a default image if not matched
+};
+
 const ALL_CATS = 'All';
 
 export default function RewardsStore() {
@@ -36,10 +56,10 @@ export default function RewardsStore() {
       setUser(updatedUser);
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
       await loadRewards(); // refresh stock counts
-      setMsg(`✅ Redeemed: ${item.name}!`);
+      setMsg(`Redeemed: ${item.name}`);
       setTimeout(() => setMsg(''), 3000);
     } catch (err) {
-      setMsg(`⚠️ ${err.message}`);
+      setMsg(`Error: ${err.message}`);
       setTimeout(() => setMsg(''), 3000);
     } finally {
       setRedeemingId(null);
@@ -53,21 +73,20 @@ export default function RewardsStore() {
         <div className="page-title">Rewards Store</div>
 
         {msg && (
-          <div style={{ background: msg.startsWith('✅') ? 'var(--green-glow)' : 'rgba(234,88,12,0.15)',
-            border: `1px solid ${msg.startsWith('✅') ? 'var(--green-primary)' : 'var(--badge-orange)'}`,
+        <div style={{ background: msg.startsWith('Redeemed') ? 'var(--green-glow)' : 'rgba(234,88,12,0.15)',
+            border: `1px solid ${msg.startsWith('Redeemed') ? 'var(--green-primary)' : 'var(--badge-orange)'}`,
             borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: 16,
-            color: msg.startsWith('✅') ? 'var(--green-bright)' : 'var(--badge-orange)' }}>
+            color: msg.startsWith('Redeemed') ? 'var(--green-bright)' : 'var(--badge-orange)' }}>
             {msg}
           </div>
         )}
 
         <div className="card" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24, padding:'20px 24px' }}>
           <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-            <span style={{ fontSize:28 }}>♻️</span>
             <div>
               <div style={{ fontSize:11, color:'var(--text-secondary)' }}>Available Eco Points</div>
               <div style={{ fontSize:30, fontWeight:700, color:'var(--green-bright)' }}>
-                {loading ? '…' : (user.points || 0).toLocaleString()}
+                {loading ? '...' : (user.points || 0).toLocaleString()}
               </div>
             </div>
           </div>
@@ -95,9 +114,11 @@ export default function RewardsStore() {
               return (
                 <div className="reward-card" key={item.reward_id}>
                   <div className="reward-img">
-                    {item.image_url
-                      ? <img src={item.image_url} alt={item.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                      : (item.emoji || '🎁')}
+                    {(item.image_url && item.image_url !== 'null' && item.image_url.trim() !== '') || getFallbackImage(item.name)
+                      ? <img src={(item.image_url && item.image_url !== 'null' && item.image_url.trim() !== '') ? item.image_url : getFallbackImage(item.name)} alt={item.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                      : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'var(--bg-panel)' }}>
+                          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>No image</span>
+                        </div>}
                   </div>
                   <div className="reward-body">
                     <div className="reward-cat">{item.category}</div>

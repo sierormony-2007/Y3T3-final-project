@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { id: 'track',     label: 'Track Pickups',  icon: ' ', path: '/track'     },
   { id: 'rewards',   label: 'Rewards Store',  icon: ' ', path: '/rewards'   },
   { id: 'impact',    label: 'My Impact',      icon: ' ', path: '/impact'    },
-  { id: 'schedule',  label: 'Schedule Pickup',icon: ' ', path: '/schedule'  },
+  { id: 'schedule',  label: 'Schedule Recycle', icon: ' ', path: '/schedule'  },
 ];
 
 function timeAgo(dateStr) {
@@ -82,13 +82,15 @@ export default function Header({ user }) {
     <aside className="sidebar">
       <div className="sidebar-logo" style={{ justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="logo-icon">♻️</div>
+          <div className="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="m13.378 9.633 4.096 1.098 1.097-4.096"/></svg>
+          </div>
           EcoRecycle
         </div>
 
         <div className="notif-wrap" ref={panelRef}>
           <button className="notif-bell" onClick={handleBellClick} aria-label="Notifications">
-            🔔
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             {unreadCount > 0 && <span className="notif-dot">{unreadCount > 9 ? '9+' : unreadCount}</span>}
           </button>
 
@@ -135,7 +137,7 @@ export default function Header({ user }) {
 
       <div className="sidebar-bottom">
         <button className="btn-request" onClick={() => navigate('/schedule')}>
-          + Request Pickup
+          + Request Recycle
         </button>
         <button className="btn-logout" onClick={handleLogout}>
           Logout

@@ -88,12 +88,12 @@ export default function Dashboard() {
             <div>
               <h1>Welcome, {user.name}</h1>
               <h3 style={{ marginTop: 4, color: 'var(--text-secondary)', fontSize: 14 }}>
-                {user.role === 'staff' ? '🛠 Staff Account' : '♻ Eco Member'}
+                {user.role === 'staff' ? 'Staff Account' : 'Eco Member'}
               </h3>
             </div>
             <button className="btn-request" style={{ width: 'auto', padding: '12px 20px', fontSize: 14 }}
               onClick={() => navigate('/schedule')}>
-              + Request Pickup
+              + Request Recycle
             </button>
           </div>
 
@@ -118,7 +118,7 @@ export default function Dashboard() {
 
         <div className="quick-actions">
           <button className="action-btn primary" onClick={() => navigate('/schedule')}>
-            <span className="action-icon">+</span>New Pickup
+            <span className="action-icon">+</span>New Recycle
           </button>
           <button className="action-btn" onClick={() => navigate('/track')}>
             <span className="action-icon"> </span>Track Status
@@ -163,7 +163,7 @@ export default function Dashboard() {
           ) : recentActivity.map((p, i) => (
             <div className="activity-item" key={i}>
               <div className={`activity-dot ${p.status === 'completed' ? 'dot-green' : 'dot-orange'}`} />
-              <div className="activity-text">{p.category} · {p.weight} kg{p.status === 'completed' ? ' — Recycled ✓' : ''}</div>
+              <div className="activity-text">{p.category} · {p.weight} kg{p.status === 'completed' ? ' — Recycled' : ''}</div>
               <div className="activity-date">{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : ''}</div>
             </div>
           ))}

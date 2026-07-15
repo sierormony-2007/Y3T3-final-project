@@ -34,19 +34,36 @@ const stats = [
 
 const features = [
   {
-    icon: " ",
-    title: "Schedule Pickup",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    ),
+    title: "Schedule Recycle",
     description: "Book a free doorstep e-waste collection in minutes",
   },
   {
-    icon: " ",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    ),
     title: "Earn EcoPoints",
     description: "Get rewarded for every device you responsibly recycle",
   },
   {
-    icon: " ",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    ),
     title: "Track Impact",
-    description: "See your CO₂ savings and environmental contribution",
+    description: "See your CO2 savings and environmental contribution",
   },
 ];
 
