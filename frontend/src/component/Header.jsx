@@ -26,6 +26,11 @@ export default function Header({ user }) {
   const activePage = NAV_ITEMS.find(n => pathname.startsWith(n.path))?.id ?? '';
 
   const currentUser = user || JSON.parse(localStorage.getItem('currentUser')) || { name: 'User', points: 0 };
+  const isStaff = currentUser.role === 'staff';
+
+  const navItems = isStaff 
+    ? [{ id: 'staff', label: 'Staff Dashboard', icon: ' ', path: '/staff' }]
+    : NAV_ITEMS;
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount]     = useState(0);
@@ -127,7 +132,7 @@ export default function Header({ user }) {
         <div className="user-pts"> {(currentUser.points || 0).toLocaleString()} pts</div>
       </div>
 
-      {NAV_ITEMS.map(item => (
+      {navItems.map(item => (
         <div key={item.id} className={`nav-item${activePage === item.id ? ' active' : ''}`}
           onClick={() => navigate(item.path)}>
           <span className="nav-icon">{item.icon}</span>
@@ -136,9 +141,11 @@ export default function Header({ user }) {
       ))}
 
       <div className="sidebar-bottom">
-        <button className="btn-request" onClick={() => navigate('/schedule')}>
-          + Request Recycle
-        </button>
+        {!isStaff && (
+          <button className="btn-request" onClick={() => navigate('/schedule')}>
+            + Request Recycle
+          </button>
+        )}
         <button className="btn-logout" onClick={handleLogout}>
           Logout
         </button>

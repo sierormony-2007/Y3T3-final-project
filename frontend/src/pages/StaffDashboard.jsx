@@ -42,7 +42,7 @@ export default function StaffDashboard() {
   // Current logged-in staff member — used to gate admin-only actions
   // (adding/deleting Rewards Store items) away from regular operators.
   const [me, setMe] = useState(JSON.parse(localStorage.getItem('currentUser')) || {});
-  const isAdmin = me.role === 'staff' && me.staff_role === 'admin';
+  const isAdmin = me.role === 'staff'; // allow all staff to add/delete rewards
 
   // ── Rewards Store management ──────────────────────────────────────────
   const [rewards, setRewards] = useState([]);
@@ -184,7 +184,6 @@ export default function StaffDashboard() {
                 Manage pickup requests, update statuses, and confirm completed recycling jobs.
               </div>
             </div>
-            <button className="btn-request" onClick={() => navigate('/dashboard')}>View User Dashboard</button>
           </div>
 
           <div className="stat-grid" style={{ marginTop:24 }}>

@@ -78,7 +78,7 @@ const {
  *         description: Forbidden – admin staff only
  */
 router.get('/',  getRewards);
-router.post('/', auth, role('staff'), adminOnly, addReward);
+router.post('/', auth, role('staff'), addReward);
 
 /**
  * @swagger
@@ -174,6 +174,6 @@ router.get('/history', getRedemptionHistory);
  *         description: Reward not found
  */
 router.patch('/:id',  auth, role('staff'), updateReward);
-router.delete('/:id', auth, role('staff'), adminOnly, deleteReward);
+router.delete('/:id', auth, role('staff'), deleteReward);
 
 module.exports = router;
