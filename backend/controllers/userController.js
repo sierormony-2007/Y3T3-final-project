@@ -1,7 +1,17 @@
 const svc = require('../services/userService');
 
 async function getUsers(req, res, next) {
-  try { res.json(await svc.getAllUsers()); } catch (err) { next(err); }
+  try {
+    const { page, limit } = req.query;
+    const result = await svc.getAllUsers({ page, limit });
+
+    res.set('X-Total-Count', result.total);
+    res.set('X-Total-Pages', result.totalPages);
+    res.set('X-Page', result.page);
+    res.json(result.users); // body stays a plain array — no frontend changes needed
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function getUserById(req, res, next) {

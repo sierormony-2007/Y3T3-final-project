@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 
 const SALT_ROUNDS = 10;
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 200; // hard cap — no request can ever pull the whole table into memory
 
 function sanitize(user) {
   const plain = user.toJSON ? user.toJSON() : user;
@@ -16,9 +18,25 @@ function sanitize(user) {
   };
 }
 
-async function getAllUsers() {
-  const users = await User.findAll({ order: [['user_id', 'ASC']] });
-  return users.map(sanitize);
+async function getAllUsers({ page = 1, limit = DEFAULT_LIMIT } = {}) {
+  const safePage = Math.max(1, parseInt(page, 10) || 1);
+  const safeLimit = Math.min(MAX_LIMIT, Math.max(1, parseInt(limit, 10) || DEFAULT_LIMIT));
+  const offset = (safePage - 1) * safeLimit;
+
+  const { rows, count } = await User.findAndCountAll({
+    order: [['user_id', 'ASC']],
+    limit: safeLimit,
+    offset,
+    attributes: { exclude: ['password_hash'] }, // don't even pull hashes out of the DB
+  });
+
+  return {
+    users: rows.map(sanitize),
+    total: count,
+    page: safePage,
+    limit: safeLimit,
+    totalPages: Math.ceil(count / safeLimit),
+  };
 }
 
 async function getUserById(userId) {
