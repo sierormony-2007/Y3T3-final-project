@@ -4,7 +4,7 @@ async function getRewards(req, res, next) {
   try { res.json(await svc.getRewards()); } catch (err) { next(err); }
 }
 async function redeemReward(req, res, next) {
-  try { res.json(await svc.redeemReward(req.user.id, req.body.rewardId)); } catch (err) { next(err); }
+  try { res.json(await svc.redeemReward(req.user.id, req.body.rewardId, req.body.quantity)); } catch (err) { next(err); }
 }
 async function getRedemptionHistory(req, res, next) {
   const userId = req.user ? req.user.id : undefined;

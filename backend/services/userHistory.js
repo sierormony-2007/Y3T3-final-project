@@ -10,8 +10,9 @@ async function getRewards() {
   });
 }
 
-async function redeemReward(userId, rewardId) {
+async function redeemReward(userId, rewardId, quantity = 1) {
   if (!rewardId) throw { status: 400, message: 'rewardId is required' };
+  if (quantity < 1 || !Number.isInteger(quantity)) throw { status: 400, message: 'Invalid quantity' };
 
   return sequelize.transaction(async (t) => {
     const [reward, user] = await Promise.all([
@@ -20,19 +21,21 @@ async function redeemReward(userId, rewardId) {
     ]);
     if (!reward || !reward.is_active) throw { status: 404, message: 'Reward not found' };
     if (!user)   throw { status: 404, message: 'User not found' };
-    if (reward.stock <= 0) throw { status: 400, message: 'Reward is out of stock' };
-    if (user.total_points < reward.points_cost) {
+    if (reward.stock < quantity) throw { status: 400, message: 'Not enough stock' };
+    
+    const totalCost = reward.points_cost * quantity;
+    if (user.total_points < totalCost) {
       throw { status: 400, message: 'Not enough points to redeem this reward' };
     }
 
     await RewardTransaction.create({
       user_id:     userId,
       type:        'redeemed',
-      points:      -reward.points_cost,
-      description: `Redeemed: ${reward.name}`,
+      points:      -totalCost,
+      description: `Redeemed: ${quantity}x ${reward.name}`,
     }, { transaction: t });
 
-    reward.stock -= 1;
+    reward.stock -= quantity;
     await reward.save({ transaction: t });
 
     // Notify the user their item is ready — shown in the bell dropdown
@@ -40,7 +43,7 @@ async function redeemReward(userId, rewardId) {
     await Notification.create({
       user_id: userId,
       title: 'Reward Redeemed! 🎉',
-      message: `You can pick up your "${reward.name}" from the collection point. Bring your account details for verification.`,
+      message: `You can pick up your ${quantity}x "${reward.name}" from the collection point. Bring your account details for verification.`,
       type: 'reward',
     }, { transaction: t });
 

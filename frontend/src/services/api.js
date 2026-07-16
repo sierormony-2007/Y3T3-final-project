@@ -64,7 +64,7 @@ export const api = {
   },
   rewards: {
     list:    ()               => request('GET',    '/rewards'),
-    redeem:  (rewardId)       => request('POST',   '/rewards/redeem', { rewardId }),
+    redeem:  (rewardId, quantity = 1) => request('POST',   '/rewards/redeem', { rewardId, quantity }),
     history: ()               => request('GET',    '/rewards/history'),
     // Staff only — manage the Rewards Store
     add:     (body)           => request('POST',   '/rewards', body),
