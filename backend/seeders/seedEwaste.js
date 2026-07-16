@@ -3,6 +3,15 @@ const sequelize = require('../config/db');
 const { User, DeviceCategory, Staff, PickupRequest, RequestDevice, RewardTransaction, Notification, UserImpact, Reward } = require('../models');
 
 async function seed() {
+  // Safety guard — refuses to wipe a production database by accident.
+  // Your Aiven DB now has ~1,000,000 rows per table from the bulk insert;
+  // sync({ force: true }) below DROPS every table before reseeding.
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SEED !== 'true') {
+    console.error('Refusing to run seed against production (NODE_ENV=production).');
+    console.error('If you really mean to wipe and reseed production, set ALLOW_SEED=true and re-run.');
+    process.exit(1);
+  }
+
   await sequelize.sync({ force: true }); // drops & recreates tables — dev only!
 
   // Demo login passwords (hashed for real, so login actually works):
