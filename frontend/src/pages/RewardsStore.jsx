@@ -31,6 +31,11 @@ export default function RewardsStore() {
   const [loading, setLoading]     = useState(true);
   const [redeemingId, setRedeemingId] = useState(null);
   const [msg, setMsg]             = useState('');
+  const [selectedReward, setSelectedReward] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const loadRewards = () => api.rewards.list().then(setRewards);
 
@@ -47,17 +52,39 @@ export default function RewardsStore() {
   const categories = [ALL_CATS, ...new Set(rewards.map(r => r.category).filter(Boolean))];
   const visible = activeCat === ALL_CATS ? rewards : rewards.filter(r => r.category === activeCat);
 
-  const handleRedeem = async (item) => {
-    if (item.stock <= 0 || (user.points || 0) < item.points_cost) return;
+  const openRedeemModal = (item) => {
+    setSelectedReward(item);
+    setQuantity(1);
+  };
+
+  const handleOpenHistory = async () => {
+    setShowHistory(true);
+    setLoadingHistory(true);
+    try {
+      const data = await api.rewards.history();
+      setHistory(data);
+    } catch (err) {
+      setMsg(`Error loading history: ${err.message}`);
+      setTimeout(() => setMsg(''), 3000);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleRedeemConfirm = async () => {
+    if (!selectedReward) return;
+    const item = selectedReward;
+    if (item.stock < quantity || (user.points || 0) < (item.points_cost * quantity)) return;
     setRedeemingId(item.reward_id);
     try {
-      const { remaining_points } = await api.rewards.redeem(item.reward_id);
+      const { remaining_points } = await api.rewards.redeem(item.reward_id, quantity);
       const updatedUser = { ...user, points: remaining_points, total_points: remaining_points };
       setUser(updatedUser);
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
       await loadRewards(); // refresh stock counts
-      setMsg(`Redeemed: ${item.name}`);
+      setMsg(`Redeemed ${quantity}x: ${item.name}`);
       setTimeout(() => setMsg(''), 3000);
+      setSelectedReward(null);
     } catch (err) {
       setMsg(`Error: ${err.message}`);
       setTimeout(() => setMsg(''), 3000);
@@ -90,7 +117,10 @@ export default function RewardsStore() {
               </div>
             </div>
           </div>
-          <span className="badge badge-gold">{(user.points || 0) >= 2000 ? 'Platinum' : (user.points || 0) >= 1000 ? 'Gold' : 'Member'}</span>
+          <div style={{ display:'flex', alignItems:'center', gap: 12 }}>
+            <button className="btn-secondary" style={{ marginTop: 0, padding: '8px 16px' }} onClick={handleOpenHistory}>View History</button>
+            <span className="badge badge-gold">{(user.points || 0) >= 2000 ? 'Platinum' : (user.points || 0) >= 1000 ? 'Gold' : 'Member'}</span>
+          </div>
         </div>
 
         <div className="pill-group">
@@ -129,7 +159,7 @@ export default function RewardsStore() {
                       <div className="reward-pts">{item.points_cost} pts</div>
                       <button className="btn-redeem"
                         disabled={outOfStock || !canAfford || isRedeeming}
-                        onClick={() => handleRedeem(item)}
+                        onClick={() => openRedeemModal(item)}
                         style={(!canAfford || outOfStock) ? { background:'var(--badge-orange)' } : {}}>
                         {isRedeeming ? '…' : outOfStock ? 'Out of stock' : canAfford ? 'Redeem' : 'Not enough pts'}
                       </button>
@@ -138,6 +168,67 @@ export default function RewardsStore() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {selectedReward && (
+          <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000 }}>
+            <div className="card" style={{ width: 400, padding: 24, boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+              <div className="page-title" style={{ fontSize: 20, marginBottom: 16 }}>Redeem {selectedReward.name}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>Points per item: {selectedReward.points_cost}</div>
+              
+              <div className="form-group">
+                <label className="form-label">Quantity</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  max={Math.min(selectedReward.stock, Math.floor((user.points || 0) / selectedReward.points_cost))}
+                  value={quantity} 
+                  onChange={(e) => setQuantity(Math.max(1, Math.min(Math.min(selectedReward.stock, Math.floor((user.points || 0) / selectedReward.points_cost)), Number(e.target.value))))} 
+                  className="form-input"
+                />
+              </div>
+              
+              <div style={{ fontSize: 14, marginTop: 16 }}>
+                Total Points: <span style={{ color: 'var(--green-bright)', fontWeight: 'bold' }}>{selectedReward.points_cost * quantity}</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                <button className="btn-secondary" style={{ marginTop: 0 }} onClick={() => setSelectedReward(null)}>Cancel</button>
+                <button className="btn-submit" style={{ marginTop: 0 }} onClick={handleRedeemConfirm} disabled={redeemingId !== null}>Confirm</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showHistory && (
+          <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000 }}>
+            <div className="card" style={{ width: 600, maxHeight: '80vh', padding: 24, boxShadow: '0 10px 30px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div className="page-title" style={{ fontSize: 20, marginBottom: 0 }}>Redemption History</div>
+                <button className="back-btn" onClick={() => setShowHistory(false)}>×</button>
+              </div>
+              
+              <div style={{ overflowY: 'auto', flex: 1, paddingRight: 8 }}>
+                {loadingHistory ? (
+                  <div style={{ textAlign:'center', color:'var(--text-secondary)', padding:32 }}>Loading history...</div>
+                ) : history.length === 0 ? (
+                  <div style={{ textAlign:'center', color:'var(--text-secondary)', padding:32 }}>No redemptions yet.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {history.map(tx => (
+                      <div key={tx.transaction_id} style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', fontSize: 14 }}>{tx.description}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{new Date(tx.created_at).toLocaleString()}</div>
+                        </div>
+                        <div style={{ color: 'var(--badge-orange)', fontWeight: 'bold' }}>{tx.points} pts</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
