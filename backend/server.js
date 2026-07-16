@@ -2,6 +2,9 @@ require('dotenv').config();
 
 const express    = require('express');
 const cors       = require('cors');
+const path       = require('path');
+const multer     = require('multer');
+const fs         = require('fs');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi    = require('swagger-ui-express');
 const sequelize  = require('./config/db');
@@ -83,6 +86,29 @@ const swaggerSpec = swaggerJsdoc({
 app.use(cors());
 app.use(express.json());
 
+// ── File Uploads ──────────────────────────────────────────────────────────────
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed'));
+  },
+});
+
+// Serve uploaded images as static files
+app.use('/uploads', express.static(UPLOADS_DIR));
+
 // Request logger (dev only)
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, _res, next) => {
@@ -114,6 +140,13 @@ app.use('/api/articles',  articleRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+// ── Image Upload ──────────────────────────────────────────────────────────────
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No image provided' });
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
 
 // Health check
 app.get('/api/health', (_req, res) =>
@@ -199,7 +232,7 @@ app.use((_req, res) => res.status(404).json({ message: 'Route not found' }));
 app.use(errorMiddleware);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-sequelize.sync({ force: false }).then(() => {
+sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () => {
     console.log('');
     console.log('========================================================');

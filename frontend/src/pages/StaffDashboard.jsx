@@ -35,14 +35,12 @@ export default function StaffDashboard() {
   const [pickups, setPickups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [usersLoading, setUsersLoading] = useState(true);
-  const [usersError, setUsersError] = useState('');
+  const [expandedId, setExpandedId] = useState(null);
 
   // Current logged-in staff member — used to gate admin-only actions
   // (adding/deleting Rewards Store items) away from regular operators.
   const [me, setMe] = useState(JSON.parse(localStorage.getItem('currentUser')) || {});
-  const isAdmin = me.role === 'staff'; // allow all staff to add/delete rewards
+  const isAdmin = me.staff_role === 'admin'; // only admins can add/edit/delete rewards
 
   // ── Rewards Store management ──────────────────────────────────────────
   const [rewards, setRewards] = useState([]);
@@ -67,11 +65,6 @@ export default function StaffDashboard() {
       .then(setPickups)
       .catch(console.error)
       .finally(() => setLoading(false));
-
-    api.auth.users()
-      .then(setUsers)
-      .catch(err => setUsersError(err.message))
-      .finally(() => setUsersLoading(false));
 
     loadRewards();
   }, []);
@@ -165,6 +158,20 @@ export default function StaffDashboard() {
     }
   };
 
+  const handleReject = async (pickup) => {
+    const reason = window.prompt("Please enter a reason for rejecting this pickup:");
+    if (reason === null) return;
+    setUpdating(pickup.request_id);
+    try {
+      const updated = await api.pickups.updateStatus(pickup.request_id, 'cancelled', reason);
+      setPickups(prev => prev.map(p => p.request_id === pickup.request_id ? { ...p, ...updated } : p));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   const orderedPickups = [...pickups].sort((a, b) => {
     const order = ['pending','confirmed','in_transit','completed','cancelled'];
     return order.indexOf(a.status) - order.indexOf(b.status);
@@ -202,51 +209,14 @@ export default function StaffDashboard() {
           </div>
         </div>
 
-        <div className="section-header" style={{ marginTop:24 }}>
-          <div className="section-title">Registered Users ({users.length})</div>
-        </div>
 
-        {usersLoading ? (
-          <div className="card" style={{ textAlign:'center', color:'var(--text-secondary)', padding:24 }}>Loading…</div>
-        ) : usersError ? (
-          <div className="card" style={{ textAlign:'center', color:'var(--badge-orange)', padding:24 }}>{usersError}</div>
-        ) : users.length === 0 ? (
-          <div className="card" style={{ textAlign:'center', color:'var(--text-secondary)', padding:24 }}>No users registered yet.</div>
-        ) : (
-          <div className="card" style={{ padding:0, overflow:'hidden' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse' }}>
-              <thead>
-                <tr style={{ background:'var(--bg-panel)' }}>
-                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>ID</th>
-                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Name</th>
-                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Email</th>
-                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Role</th>
-                  <th style={{ textAlign:'left', padding:'12px 16px', fontSize:12, color:'var(--text-secondary)' }}>Points</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map(u => (
-                  <tr key={u.id} style={{ borderTop:'1px solid var(--border)' }}>
-                    <td style={{ padding:'12px 16px', fontSize:13 }}>{u.id}</td>
-                    <td style={{ padding:'12px 16px', fontSize:13 }}>{u.name}</td>
-                    <td style={{ padding:'12px 16px', fontSize:13 }}>{u.email}</td>
-                    <td style={{ padding:'12px 16px', fontSize:13 }}>
-                      <span className={u.role === 'staff' ? 'badge badge-processing' : 'badge'}>{u.role}</span>
-                    </td>
-                    <td style={{ padding:'12px 16px', fontSize:13 }}>{u.points}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
 
         <div className="section-header" style={{ marginTop:24 }}>
           <div className="section-title">Rewards Store Management</div>
         </div>
 
         <div className="card" style={{ marginBottom:16 }}>
-          {(isAdmin || editingId) ? (
+          {isAdmin ? (
             <>
           <div style={{ fontWeight:600, marginBottom:12 }}>{editingId ? 'Edit Reward' : 'Add New Reward'}</div>
 
@@ -301,7 +271,7 @@ export default function StaffDashboard() {
             </>
           ) : (
             <div style={{ color:'var(--text-secondary)', fontSize:13 }}>
-              Only admin staff can add new rewards. You can still edit existing items below.
+              Only admin staff can add, edit or remove rewards.
             </div>
           )}
         </div>
@@ -338,9 +308,11 @@ export default function StaffDashboard() {
                     <td style={{ padding:'10px 16px', fontSize:13 }}>{r.points_cost}</td>
                     <td style={{ padding:'10px 16px', fontSize:13 }}>{r.stock}</td>
                     <td style={{ padding:'10px 16px', textAlign:'right' }}>
-                      <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, marginRight:8 }} onClick={() => startEditReward(r)}>Edit</button>
                       {isAdmin && (
-                        <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, background:'var(--badge-orange)' }} onClick={() => handleDeleteReward(r)}>Delete</button>
+                        <>
+                          <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, marginRight:8 }} onClick={() => startEditReward(r)}>Edit</button>
+                          <button className="action-btn" style={{ padding:'6px 12px', fontSize:12, background:'var(--badge-orange)' }} onClick={() => handleDeleteReward(r)}>Delete</button>
+                        </>
                       )}
                     </td>
                   </tr>
@@ -365,48 +337,96 @@ export default function StaffDashboard() {
             ? `${String(pickup.time_window_start).slice(0,5)} - ${String(pickup.time_window_end).slice(0,5)}`
             : '';
           return (
-          <div key={pickup.request_id} className="pickup-row" style={{ cursor:'default' }}>
-            <div className={`pickup-icon ${pickup.status==='completed'?'green':pickup.status==='in_transit'?'orange':pickup.status==='confirmed'?'orange':'yellow'}`}>
-              {pickup.status==='completed'?'OK':pickup.status==='in_transit'?'Transit':pickup.status==='confirmed'?'Set':'New'}
-            </div>
-            <div className="pickup-info" style={{ flex:1 }}>
-              <div className="pickup-name">{pickup.User?.full_name || 'Unknown user'} · {categoryLabel}</div>
-              <div className="pickup-meta">{Number(pickup.total_weight_kg) || 0} kg · {pickup.preferred_date || 'No date'}</div>
-              <div className="pickup-meta" style={{ marginTop: 2 }}>{pickup.pickup_address}</div>
-              <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:8, alignItems:'center' }}>
-                <span className={STATUS_CLASS[pickup.status]||'badge'}>{STATUS_LABELS[pickup.status]}</span>
-                <span style={{ color:'var(--text-secondary)', fontSize:12 }}>{timeSlot || pickup.special_note || ''}</span>
+          <div key={pickup.request_id} className="card" style={{ marginBottom: 10, cursor:'pointer' }} onClick={() => setExpandedId(prev => prev === pickup.request_id ? null : pickup.request_id)}>
+            <div style={{ display: 'flex', gap: 14 }}>
+              <div className={`pickup-icon ${pickup.status==='completed'?'green':pickup.status==='in_transit'?'orange':pickup.status==='confirmed'?'orange':'yellow'}`}>
+                {pickup.status==='completed'?'OK':pickup.status==='in_transit'?'Transit':pickup.status==='confirmed'?'Set':'New'}
               </div>
-              <div style={{ display:'flex', gap:14, flexWrap:'wrap', marginTop:8, alignItems:'center' }}>
-                {pickup.phone && (
-                  <a href={`tel:${pickup.phone}`} style={{ fontSize:12, color:'var(--green-bright)', textDecoration:'none' }}>
-                    {pickup.phone}
-                  </a>
-                )}
-                {pickup.link && (
-                  <a href={pickup.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:'var(--green-bright)', textDecoration:'none' }}>
-                    View on map
-                  </a>
-                )}
+              <div className="pickup-info" style={{ flex:1 }}>
+                <div className="pickup-name">{pickup.User?.full_name || 'Unknown user'} · {categoryLabel}</div>
+                <div className="pickup-meta">{Number(pickup.total_weight_kg) || 0} kg · {pickup.preferred_date || 'No date'}</div>
+                <div className="pickup-meta" style={{ marginTop: 2 }}>{pickup.pickup_address}</div>
+                <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:8, alignItems:'center' }}>
+                  <span className={STATUS_CLASS[pickup.status]||'badge'}>{STATUS_LABELS[pickup.status]}</span>
+                  <span style={{ color:'var(--text-secondary)', fontSize:12 }}>{timeSlot || pickup.special_note || ''}</span>
+                </div>
               </div>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:10 }}>
-              {(isAdmin || pickup.status === 'pending') ? (
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:10 }} onClick={e => e.stopPropagation()}>
+                {pickup.status === 'pending' && (
+                  <button className="action-btn"
+                    style={{ padding:'10px 14px', fontSize:12, minWidth:120, background: 'var(--badge-orange)', color: 'white', border: 'none' }}
+                    disabled={updating === pickup.request_id}
+                    onClick={() => handleReject(pickup)}>
+                    Reject
+                  </button>
+                )}
                 <button className="action-btn"
                   style={{ padding:'10px 14px', fontSize:12, minWidth:120 }}
                   disabled={!NEXT_STATUS[pickup.status] || updating === pickup.request_id}
                   onClick={() => handleNextStatus(pickup)}>
                   {updating === pickup.request_id ? '…' : ACTION_LABEL[pickup.status]}
                 </button>
-              ) : (
-                <span style={{ fontSize:11, color:'var(--text-secondary)' }}>Admin only</span>
-              )}
-              {pickup.status !== 'pending' && (
-                <span style={{ fontSize:12, color:'var(--green-bright)' }}>
-                  +{pickup.points_awarded || 0} pts awarded
-                </span>
-              )}
+                {pickup.status !== 'pending' && (
+                  <span style={{ fontSize:12, color:'var(--green-bright)' }}>
+                    +{pickup.points_awarded || 0} pts awarded
+                  </span>
+                )}
+              </div>
             </div>
+
+            {expandedId === pickup.request_id && (
+              <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)' }} onClick={e => e.stopPropagation()}>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Request Details</div>
+                <div className="detail-grid" style={{ marginBottom: 16 }}>
+                  <div className="detail-cell"><div className="detail-label">Date</div><div className="detail-value">{pickup.preferred_date}</div></div>
+                  <div className="detail-cell"><div className="detail-label">Time</div><div className="detail-value">{timeSlot}</div></div>
+                  <div className="detail-cell"><div className="detail-label">Weight</div><div className="detail-value">{Number(pickup.total_weight_kg) || 0} kg</div></div>
+                  <div className="detail-cell"><div className="detail-label">Items</div><div className="detail-value">{pickup.total_devices}</div></div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 250 }}>
+                    <div className="detail-cell" style={{ border:'1px solid var(--border)', borderRadius:'var(--radius-md)', padding:14, marginBottom:12 }}>
+                      <div className="detail-label">Full Address</div>
+                      <div className="detail-value" style={{ fontSize:14 }}>{pickup.pickup_address}</div>
+                    </div>
+                    {pickup.special_note && (
+                      <div className="detail-cell" style={{ border:'1px solid var(--border)', borderRadius:'var(--radius-md)', padding:14, marginBottom:12 }}>
+                        <div className="detail-label">Special Notes</div>
+                        <div className="detail-value" style={{ fontSize:14 }}>{pickup.special_note}</div>
+                      </div>
+                    )}
+                    {(pickup.phone || pickup.link) && (
+                      <div className="detail-cell" style={{ border:'1px solid var(--border)', borderRadius:'var(--radius-md)', padding:14, marginBottom:12, display:'flex', gap:20, flexWrap:'wrap' }}>
+                        {pickup.phone && (
+                          <div>
+                            <div className="detail-label">Contact Phone</div>
+                            <a href={`tel:${pickup.phone}`} className="detail-value" style={{ fontSize:14, color:'var(--green-bright)', textDecoration: 'none' }}>{pickup.phone}</a>
+                          </div>
+                        )}
+                        {pickup.link && (
+                          <div>
+                            <div className="detail-label">Map Link</div>
+                            <a href={pickup.link} target="_blank" rel="noopener noreferrer" style={{ fontSize:14, color:'var(--green-bright)', textDecoration: 'none' }}>
+                              View location ↗
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {pickup.image_url && (
+                    <div style={{ width: 200, flexShrink: 0 }}>
+                      <div className="detail-label" style={{ marginBottom: 8 }}>Device Image</div>
+                      <a href={pickup.image_url} target="_blank" rel="noopener noreferrer">
+                        <img src={pickup.image_url} alt="Device" style={{ width: '100%', borderRadius: 8, objectFit: 'cover', border: '1px solid var(--border)' }} />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           );
         })}

@@ -49,6 +49,12 @@ const PickupRequest = sequelize.define('PickupRequest', {
     defaultValue: null,
     comment: 'Google Maps or any reference link for the pickup location',
   },
+  image_url: {
+    type: DataTypes.STRING(1000),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Image URL of the device(s)',
+  },
   // ────────────────────────────────────────────────────────────
   total_devices: {
     type: DataTypes.INTEGER,

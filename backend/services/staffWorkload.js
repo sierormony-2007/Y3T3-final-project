@@ -8,6 +8,7 @@ const {
   User,
   UserImpact,
   RewardTransaction,
+  Notification,
 } = require('../models');
 
 function isStaff(role) {
@@ -25,6 +26,7 @@ async function createPickup(userId, body) {
     special_note,
     phone,
     link,
+    image_url,
     devices,
   } = body;
 
@@ -72,6 +74,7 @@ async function createPickup(userId, body) {
       special_note,
       phone:  phone  || null,
       link:   link   || null,
+      image_url: image_url || null,
       total_devices,
       total_weight_kg,
       points_awarded: Math.round(points_awarded),
@@ -121,7 +124,7 @@ async function getPickupById(id, userId, role) {
   return pickup;
 }
 
-async function updateStatus(id, status, role, staffRole) {
+async function updateStatus(id, status, role, staffRole, reason) {
   const validStatuses = ['pending', 'confirmed', 'in_transit', 'completed', 'cancelled'];
   if (!validStatuses.includes(status)) {
     throw { status: 400, message: `status must be one of: ${validStatuses.join(', ')}` };
@@ -139,8 +142,9 @@ async function updateStatus(id, status, role, staffRole) {
     // Marking it picked up, completing it, or cancelling it is admin-only.
     if (!isAdmin) {
       const isAcceptAction = pickup.status === 'pending' && status === 'confirmed';
-      if (!isAcceptAction) {
-        throw { status: 403, message: 'Forbidden: operator staff can only accept pending requests' };
+      const isRejectAction = pickup.status === 'pending' && status === 'cancelled';
+      if (!isAcceptAction && !isRejectAction) {
+        throw { status: 403, message: 'Forbidden: operator staff can only accept or reject pending requests' };
       }
     }
 
@@ -175,6 +179,25 @@ async function updateStatus(id, status, role, staffRole) {
         co2_saved_kg:       Number(pickup.total_weight_kg) * 1.5,
         toxins_diverted_kg: Number(pickup.total_weight_kg) * 0.05,
         total_pickups:      1,
+      }, { transaction: t });
+
+      await Notification.create({
+        user_id: pickup.user_id,
+        title: 'Pickup Accepted',
+        message: `Your pickup request #${pickup.request_id} has been confirmed.`,
+        type: 'system',
+      }, { transaction: t });
+    }
+
+    if (status === 'cancelled' && !wasConfirmedOrBeyond) {
+      if (reason) {
+        pickup.special_note = pickup.special_note ? `${pickup.special_note}\nRejection Reason: ${reason}` : `Rejection Reason: ${reason}`;
+      }
+      await Notification.create({
+        user_id: pickup.user_id,
+        title: 'Pickup Rejected',
+        message: `Your pickup request #${pickup.request_id} was rejected. Reason: ${reason || 'No reason provided'}`,
+        type: 'system',
       }, { transaction: t });
     }
 

@@ -9,6 +9,8 @@ const today = new Date().toISOString().split('T')[0];
 export default function SchedulePickup() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
+  const [imageFile, setImageFile]   = useState(null);   // selected File object
+  const [imagePreview, setImagePreview] = useState(''); // local object URL for preview
   useEffect(() => {
   const loadCategories = async () => {
     try {
@@ -25,12 +27,20 @@ export default function SchedulePickup() {
     category: null, description: '', itemCount: 1,
     weight: '', date: '', timeSlot: '10:00 – 12:00',
     district: '', city: '', postal: '', notes: '',
-    phone: '', mapLink: '',
+    phone: '', mapLink: '', imageUrl: '',
   });
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [uploadProgress, setUploadProgress] = useState('');
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -59,7 +69,17 @@ export default function SchedulePickup() {
     setLoading(true);
     setApiError('');
     try {
-    const [start, end] = form.timeSlot.split(/\s+[–-]\s+/);
+      // 1. Upload image if user selected one
+      let image_url = undefined;
+      if (imageFile) {
+        setUploadProgress('Uploading image…');
+        const uploadResult = await api.upload.image(imageFile);
+        image_url = uploadResult.url;
+        setUploadProgress('');
+      }
+
+      // 2. Create the pickup request
+      const [start, end] = form.timeSlot.split(/\s+[–-]\s+/);
       await api.pickups.create({
         pickup_address: `${form.district}, ${form.city}, ${form.postal}`,
         preferred_date: form.date,
@@ -68,7 +88,7 @@ export default function SchedulePickup() {
         special_note: form.notes,
         phone: form.phone,
         link: form.mapLink || undefined,
-
+        image_url,
         devices: [
           {
             category_id: Number(form.category),
@@ -79,9 +99,10 @@ export default function SchedulePickup() {
         ]
       });
       setSubmitted(true);
-      setTimeout(() => navigate('/dashboard'), 2500);
+      setTimeout(() => navigate('/dashboard'), 500);
     } catch (err) {
       setApiError(err.message);
+      setUploadProgress('');
     } finally {
       setLoading(false);
     }
@@ -231,6 +252,36 @@ export default function SchedulePickup() {
                 Paste a Google Maps link to your location so staff can find it easily.
               </div>
             </div>
+            <div className="form-group">
+              <label className="form-label">Device Photo (optional)</label>
+              <label htmlFor="device-image-input" style={{
+                display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
+                border: '2px dashed var(--border)', borderRadius: 'var(--radius-md)',
+                padding: 16, transition: 'border-color 0.2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--green-bright)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+              >
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 80, height: 80, borderRadius: 8, background: 'var(--bg-panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}>
+                    📷
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{imageFile ? imageFile.name : 'Click to upload a photo'}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>JPG, PNG, WebP — max 10 MB</div>
+                  {imageFile && (
+                    <button type="button" style={{ fontSize: 11, color: 'var(--badge-orange)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 4 }}
+                      onClick={(e) => { e.preventDefault(); setImageFile(null); setImagePreview(''); }}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </label>
+              <input id="device-image-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageChange} />
+            </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Special Instructions (optional)</label>
               <textarea className="form-textarea" placeholder="e.g. Ring bell twice, leave at gate..."
@@ -239,7 +290,7 @@ export default function SchedulePickup() {
           </div>
 
           <button className="btn-submit" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Submitting...' : 'Confirm Recycle Request'}
+            {loading ? (uploadProgress || 'Submitting...') : 'Confirm Recycle Request'}
           </button>
           <button className="btn-secondary" onClick={() => navigate('/dashboard')}>Cancel</button>
         </div>

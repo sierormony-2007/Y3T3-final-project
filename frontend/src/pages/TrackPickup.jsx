@@ -54,6 +54,16 @@ export default function TrackPickups() {
   const [expanded, setExpanded] = useState(null);
   const [loading, setLoading]   = useState(true);
 
+  const handleCancel = async (id) => {
+    if (!confirm('Are you sure you want to cancel this pickup?')) return;
+    try {
+      await api.pickups.cancel(id);
+      setPickups(prev => prev.map(p => p.id === id ? { ...p, status: 'cancelled' } : p));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
     const currentUserId = currentUser.user_id;
@@ -152,9 +162,18 @@ export default function TrackPickups() {
                       <strong>+{Math.round(p.weight * 40)} eco points earned</strong> · {p.weight} kg × 40 pts/kg
                   </div>
                 ) : (
-                  <div className="points-banner" style={{ color:'var(--text-secondary)' }}>
-                      Points will be awarded once staff accepts your request
-                  </div>
+                  <>
+                    <div className="points-banner" style={{ color:'var(--text-secondary)' }}>
+                        Points will be awarded once staff accepts your request
+                    </div>
+                    <button 
+                      className="btn-secondary" 
+                      style={{ marginTop: 12, background: 'var(--badge-orange)', color: '#fff', border: 'none' }}
+                      onClick={(e) => { e.stopPropagation(); handleCancel(p.id); }}
+                    >
+                      Cancel Pickup
+                    </button>
+                  </>
                 )}
               </>
             )}

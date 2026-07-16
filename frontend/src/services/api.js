@@ -42,7 +42,7 @@ async function request(method, path, body) {
     });
   } catch (networkErr) {
     console.error('[api] network error:', networkErr);
-    throw new Error('Cannot connect to server. The backend at https://ewaste-db.onrender.com may be sleeping (Render free tier spins down after inactivity). Please wait a moment and try again.');
+    throw new Error('Cannot connect to server. Please ensure the backend is running and try again.');
   }
 
   console.log(`[api] ${method} ${url} -> ${res.status}`);
@@ -81,7 +81,7 @@ export const api = {
     create:       (body)         => request('POST',   '/pickups', body),
     list:         ()             => request('GET',    '/pickups'),
     get:          (id)           => request('GET',    `/pickups/${id}`),
-    updateStatus: (id, status)   => request('PATCH',  `/pickups/${id}/status`, { status }),
+    updateStatus: (id, status, reason)   => request('PATCH',  `/pickups/${id}/status`, { status, reason }),
     cancel:       (id)           => request('DELETE', `/pickups/${id}`),
     history:      ()             => request('GET',    '/pickups/history'),
   },
@@ -107,5 +107,20 @@ export const api = {
     unreadCount: ()     => request('GET',   '/notifications/unread-count'),
     markRead:    (id)   => request('PATCH', `/notifications/${id}/read`),
     markAllRead: ()     => request('PATCH', '/notifications/read-all'),
+  },
+  upload: {
+    image: async (file) => {
+      const token = getToken();
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch(`${BASE}/upload`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+      return data; // { url: '/uploads/...' }
+    },
   },
 };
