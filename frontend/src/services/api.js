@@ -7,12 +7,30 @@ function getToken() {
 }
 
 
+const cache = new Map();
+
 async function request(method, path, body) {
   const headers = { 'Content-Type': 'application/json' };
   const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const url = `${BASE}${path}`;
+  const cacheKey = `${method}:${url}`;
+
+  if (method === 'GET' && cache.has(cacheKey)) {
+    const cached = cache.get(cacheKey);
+    // Cache for 60 seconds
+    if (Date.now() - cached.timestamp < 60000) {
+      console.log(`[api] CACHE HIT ${method} ${url}`);
+      return cached.data;
+    }
+  }
+
+  if (method !== 'GET') {
+    // Simple cache invalidation: clear cache on any mutation
+    cache.clear();
+  }
+
   console.log(`[api] ${method} ${url}`, body || '');
 
   let res;
@@ -39,6 +57,11 @@ async function request(method, path, body) {
   }
 
   if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
+  
+  if (method === 'GET') {
+    cache.set(cacheKey, { timestamp: Date.now(), data });
+  }
+  
   return data;
 }
 
