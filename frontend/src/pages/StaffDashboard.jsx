@@ -184,12 +184,25 @@ export default function StaffDashboard() {
         <div className="page-title">Staff Dashboard</div>
 
         <div className="card-lg">
-          <div style={{ display:'flex', gap:20, flexWrap:'wrap', alignItems:'center' }}>
+          <div style={{ display:'flex', gap:20, flexWrap:'wrap', alignItems:'center', justifyContent:'space-between' }}>
             <div>
               <div style={{ fontSize:26, fontWeight:700 }}>Operations Center</div>
               <div style={{ color:'var(--text-secondary)', marginTop:6 }}>
                 Manage pickup requests, update statuses, and confirm completed recycling jobs.
               </div>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6 }}>
+              <span style={{
+                display:'inline-flex', alignItems:'center', gap:6,
+                background: isAdmin ? 'rgba(74,222,128,0.15)' : 'rgba(251,191,36,0.15)',
+                border: `1px solid ${isAdmin ? 'var(--green-primary)' : '#fbbf24'}`,
+                borderRadius:'var(--radius-md)', padding:'6px 14px',
+                fontSize:12, fontWeight:700,
+                color: isAdmin ? 'var(--green-bright)' : '#fbbf24',
+              }}>
+                {isAdmin ? '🛡️ Admin' : '👤 Operator'}
+              </span>
+              <span style={{ fontSize:11, color:'var(--text-secondary)' }}>{me.email || ''}</span>
             </div>
           </div>
 
@@ -270,8 +283,16 @@ export default function StaffDashboard() {
           </div>
             </>
           ) : (
-            <div style={{ color:'var(--text-secondary)', fontSize:13 }}>
-              Only admin staff can add, edit or remove rewards.
+            <div style={{
+              background:'rgba(251,191,36,0.08)', border:'1px solid rgba(251,191,36,0.3)',
+              borderRadius:'var(--radius-md)', padding:'14px 16px',
+              color:'#fbbf24', fontSize:13, display:'flex', alignItems:'center', gap:10
+            }}>
+              <span style={{ fontSize:18 }}>🔒</span>
+              <div>
+                <div style={{ fontWeight:600, marginBottom:2 }}>Operator Access</div>
+                <div style={{ color:'var(--text-secondary)', fontSize:12 }}>You can view rewards but only admins can add, edit or remove them. Contact an admin to make changes.</div>
+              </div>
             </div>
           )}
         </div>
