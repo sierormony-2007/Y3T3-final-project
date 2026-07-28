@@ -1,3 +1,9 @@
+#!/bin/bash
+
+source .env
+
+mkdir -p backups
+
 mysqldump \
 -h $DB_HOST \
 -P $DB_PORT \
@@ -8,4 +14,4 @@ mysqldump \
 --triggers \
 --events \
 --set-gtid-purged=OFF \
-$DB_NAME > backup.sql
+$DB_NAME > backups/EWASTE_db_$(date +%Y%m%d_%H%M%S).sql

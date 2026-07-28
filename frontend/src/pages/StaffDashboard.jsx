@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../component/Header.jsx';
 import { api } from '../services/api.js';
 
+// Base URL of the backend — used to resolve /uploads/... images in production
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+const resolveImageUrl = (url) => {
+  if (!url || url === 'null' || url.trim() === '') return null;
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  return url;
+};
+
 const getFallbackImage = (name) => {
   const map = {
     'Strawberry Tote Bag': '/rewards/strawberry-tote-bag.jpg',
@@ -28,6 +37,16 @@ const STATUS_CLASS  = { pending:'badge badge-pending', confirmed:'badge badge-pr
 const NEXT_STATUS   = { pending:'confirmed', confirmed:'in_transit', in_transit:'completed' };
 const ACTION_LABEL  = { pending:'Accept', confirmed:'Mark Picked Up', in_transit:'Complete', completed:'Done', cancelled:'Cancelled' };
 
+// Images available in frontend/public/rewards/
+const PUBLIC_IMAGES = [
+  { path: '/rewards/strawberry-tote-bag.jpg',   label: 'Tote Bag' },
+  { path: '/rewards/rosca-water-bottle.jpg',    label: 'Water Bottle' },
+  { path: '/rewards/coffee-cup.jpg',            label: 'Coffee Cup' },
+  { path: '/rewards/coffee-voucher.jpg',        label: 'Coffee Voucher' },
+  { path: '/rewards/parking-voucher.jpg',       label: 'Parking Voucher' },
+  { path: '/rewards/Rifle Paper Co_ (@riflepaperco) \u2022 Instagram photos and videos.jpg', label: 'Notebook' },
+];
+
 const EMPTY_REWARD_FORM = { name: '', description: '', points_cost: '', category: '', emoji: '', image_url: '', stock: '' };
 
 export default function StaffDashboard() {
@@ -51,9 +70,21 @@ export default function StaffDashboard() {
   const [savingReward, setSavingReward] = useState(false);
   const [rewardMsg, setRewardMsg] = useState('');
 
+  const DEFAULT_REWARDS = [
+    { reward_id: 1, name: 'Strawberry Tote Bag', description: 'Cute canvas tote bag with a strawberry print — perfect for grocery runs.', points_cost: 150, category: 'Lifestyle', image_url: '/rewards/strawberry-tote-bag.jpg', stock: 40, is_active: true },
+    { reward_id: 2, name: 'Rosca Insulated Bottle', description: 'Matte pastel stainless-steel water bottle that keeps drinks cold for hours.', points_cost: 250, category: 'Lifestyle', image_url: '/rewards/rosca-water-bottle.jpg', stock: 30, is_active: true },
+    { reward_id: 3, name: 'Reusable Coffee Cup', description: 'Bamboo-lid reusable cup, good for hot or cold drinks on the go.', points_cost: 100, category: 'Lifestyle', image_url: '/rewards/coffee-cup.jpg', stock: 60, is_active: true },
+    { reward_id: 4, name: '$5 Brown Coffee Voucher', description: 'Voucher redeemable at any Brown Coffee branch in Phnom Penh.', points_cost: 200, category: 'Vouchers', image_url: '/rewards/coffee-voucher.jpg', stock: 25, is_active: true },
+    { reward_id: 5, name: '1-Month Aeon Mall Parking', description: 'One month of free parking at Aeon Mall.', points_cost: 300, category: 'Vouchers', image_url: '/rewards/parking-voucher.jpg', stock: 15, is_active: true },
+    { reward_id: 6, name: 'Recycled Notebook Set', description: 'Set of 3 notebooks made from 100% recycled paper.', points_cost: 80, category: 'Stationery', image_url: '/rewards/Rifle Paper Co_ (@riflepaperco) • Instagram photos and videos.jpg', stock: 50, is_active: true }
+  ];
+
   const loadRewards = () => api.rewards.list()
-    .then(setRewards)
-    .catch(err => setRewardsError(err.message))
+    .then(data => setRewards(data && data.length > 0 ? data : DEFAULT_REWARDS))
+    .catch(err => {
+      setRewards(DEFAULT_REWARDS);
+      setRewardsError('');
+    })
     .finally(() => setRewardsLoading(false));
 
   useEffect(() => {
@@ -263,9 +294,33 @@ export default function StaffDashboard() {
               <label className="form-label">Emoji / Icon (optional)</label>
               <input className="form-input" name="emoji" value={rewardForm.emoji} onChange={handleRewardFormChange} placeholder="Leave blank to use image" />
             </div>
-            <div className="form-group">
-              <label className="form-label">Image URL (optional)</label>
-              <input className="form-input" name="image_url" value={rewardForm.image_url} onChange={handleRewardFormChange} placeholder="/rewards/my-item.jpg" />
+            <div className="form-group" style={{ gridColumn:'1 / -1' }}>
+              <label className="form-label">Pick an Image</label>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(6, 1fr)', gap:8, marginTop:6 }}>
+                {PUBLIC_IMAGES.map(img => (
+                  <button
+                    key={img.path}
+                    type="button"
+                    onClick={() => setRewardForm(prev => ({ ...prev, image_url: img.path }))}
+                    style={{
+                      border: rewardForm.image_url === img.path ? '2px solid var(--green-primary)' : '2px solid var(--border)',
+                      borderRadius: 8, padding: 4, background: 'var(--bg-panel)',
+                      cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 4, transition: 'border-color 0.2s',
+                    }}
+                  >
+                    <img src={img.path} alt={img.label} style={{ width:'100%', aspectRatio:'1', objectFit:'cover', borderRadius:6 }} />
+                    <span style={{ fontSize:10, color:'var(--text-secondary)', textAlign:'center' }}>{img.label}</span>
+                  </button>
+                ))}
+              </div>
+              {rewardForm.image_url && (
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:8 }}>
+                  <img src={rewardForm.image_url} alt="selected" style={{ width:40, height:40, objectFit:'cover', borderRadius:6, border:'1px solid var(--border)' }} />
+                  <span style={{ fontSize:12, color:'var(--green-bright)' }}>Selected: {rewardForm.image_url.split('/').pop()}</span>
+                  <button type="button" onClick={() => setRewardForm(prev => ({ ...prev, image_url: '' }))} style={{ fontSize:11, color:'var(--badge-orange)', background:'none', border:'none', cursor:'pointer', padding:'2px 6px' }}>✕ Clear</button>
+                </div>
+              )}
             </div>
             <div className="form-group" style={{ gridColumn:'1 / -1' }}>
               <label className="form-label">Description</label>
@@ -320,9 +375,12 @@ export default function StaffDashboard() {
                 {rewards.map(r => (
                   <tr key={r.reward_id} style={{ borderTop:'1px solid var(--border)' }}>
                     <td style={{ padding:'10px 16px' }}>
-                      {(r.image_url && r.image_url !== 'null' && r.image_url.trim() !== '') || getFallbackImage(r.name)
-                        ? <img src={(r.image_url && r.image_url !== 'null' && r.image_url.trim() !== '') ? r.image_url : getFallbackImage(r.name)} alt={r.name} style={{ width:36, height:36, borderRadius:6, objectFit:'cover' }} />
-                        : <span style={{ fontSize:13, color:'var(--text-secondary)' }}>No image</span>}
+                      <img
+                        src={resolveImageUrl(r.image_url) || getFallbackImage(r.name)}
+                        alt={r.name}
+                        style={{ width:36, height:36, borderRadius:6, objectFit:'cover' }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = getFallbackImage(r.name); }}
+                      />
                     </td>
                     <td style={{ padding:'10px 16px', fontSize:13 }}>{r.name}</td>
                     <td style={{ padding:'10px 16px', fontSize:13 }}>{r.category}</td>

@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react';
 import Header from '../component/Header.jsx';
 import { api } from '../services/api.js';
 
+// Base URL of the backend — used to resolve /uploads/... images in production
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+/**
+ * Resolves a reward image URL:
+ * - /uploads/...  → prepend the backend base URL (works in prod where there is no Vite proxy)
+ * - /rewards/...  → served from Vite's public folder, no prefix needed
+ * - http(s)://... → absolute URL, use as-is
+ * - empty/null    → return null so the fallback kicks in
+ */
+const resolveImageUrl = (url) => {
+  if (!url || url === 'null' || url.trim() === '') return null;
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  return url; // /rewards/... or absolute URL
+};
+
 const getFallbackImage = (name) => {
   const map = {
     'Strawberry Tote Bag': '/rewards/strawberry-tote-bag.jpg',
@@ -37,7 +53,18 @@ export default function RewardsStore() {
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const loadRewards = () => api.rewards.list().then(setRewards);
+  const DEFAULT_REWARDS = [
+    { reward_id: 1, name: 'Strawberry Tote Bag', description: 'Cute canvas tote bag with a strawberry print — perfect for grocery runs.', points_cost: 150, category: 'Lifestyle', image_url: '/rewards/strawberry-tote-bag.jpg', stock: 40 },
+    { reward_id: 2, name: 'Rosca Insulated Bottle', description: 'Matte pastel stainless-steel water bottle that keeps drinks cold for hours.', points_cost: 250, category: 'Lifestyle', image_url: '/rewards/rosca-water-bottle.jpg', stock: 30 },
+    { reward_id: 3, name: 'Reusable Coffee Cup', description: 'Bamboo-lid reusable cup, good for hot or cold drinks on the go.', points_cost: 100, category: 'Lifestyle', image_url: '/rewards/coffee-cup.jpg', stock: 60 },
+    { reward_id: 4, name: '$5 Brown Coffee Voucher', description: 'Voucher redeemable at any Brown Coffee branch in Phnom Penh.', points_cost: 200, category: 'Vouchers', image_url: '/rewards/coffee-voucher.jpg', stock: 25 },
+    { reward_id: 5, name: '1-Month Aeon Mall Parking', description: 'One month of free parking at Aeon Mall.', points_cost: 300, category: 'Vouchers', image_url: '/rewards/parking-voucher.jpg', stock: 15 },
+    { reward_id: 6, name: 'Recycled Notebook Set', description: 'Set of 3 notebooks made from 100% recycled paper.', points_cost: 80, category: 'Stationery', image_url: '/rewards/Rifle Paper Co_ (@riflepaperco) • Instagram photos and videos.jpg', stock: 50 }
+  ];
+
+  const loadRewards = () => api.rewards.list()
+    .then(data => setRewards(data && data.length > 0 ? data : DEFAULT_REWARDS))
+    .catch(() => setRewards(DEFAULT_REWARDS));
 
   useEffect(() => {
     Promise.all([loadRewards(), api.auth.me()])
@@ -144,11 +171,12 @@ export default function RewardsStore() {
               return (
                 <div className="reward-card" key={item.reward_id}>
                   <div className="reward-img">
-                    {(item.image_url && item.image_url !== 'null' && item.image_url.trim() !== '') || getFallbackImage(item.name)
-                      ? <img src={(item.image_url && item.image_url !== 'null' && item.image_url.trim() !== '') ? item.image_url : getFallbackImage(item.name)} alt={item.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                      : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'var(--bg-panel)' }}>
-                          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>No image</span>
-                        </div>}
+                    <img
+                      src={resolveImageUrl(item.image_url) || getFallbackImage(item.name)}
+                      alt={item.name}
+                      style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                      onError={(e) => { e.target.onerror = null; e.target.src = getFallbackImage(item.name); }}
+                    />
                   </div>
                   <div className="reward-body">
                     <div className="reward-cat">{item.category}</div>

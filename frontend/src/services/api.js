@@ -1,13 +1,12 @@
 // src/services/api.js
 const BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
 
-
 function getToken() {
   return localStorage.getItem('token');
 }
 
-
 const cache = new Map();
+const CACHE_TTL = 30_000; // 30 seconds
 
 async function request(method, path, body) {
   const headers = { 'Content-Type': 'application/json' };
@@ -17,21 +16,22 @@ async function request(method, path, body) {
   const url = `${BASE}${path}`;
   const cacheKey = `${method}:${url}`;
 
+  // Serve from cache if still fresh
   if (method === 'GET' && cache.has(cacheKey)) {
     const cached = cache.get(cacheKey);
-    // Cache for 60 seconds
-    if (Date.now() - cached.timestamp < 60000) {
-      console.log(`[api] CACHE HIT ${method} ${url}`);
+    if (Date.now() - cached.timestamp < CACHE_TTL) {
       return cached.data;
     }
+    cache.delete(cacheKey); // expired
   }
 
+  // Mutations: only clear GET caches for the same path prefix
   if (method !== 'GET') {
-    // Simple cache invalidation: clear cache on any mutation
-    cache.clear();
+    const prefix = `GET:${BASE}${path.split('/').slice(0, 2).join('/')}`;
+    for (const key of cache.keys()) {
+      if (key.startsWith(prefix)) cache.delete(key);
+    }
   }
-
-  console.log(`[api] ${method} ${url}`, body || '');
 
   let res;
   try {
@@ -41,11 +41,8 @@ async function request(method, path, body) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch (networkErr) {
-    console.error('[api] network error:', networkErr);
     throw new Error('Cannot connect to server. Please ensure the backend is running and try again.');
   }
-
-  console.log(`[api] ${method} ${url} -> ${res.status}`);
 
   // Safely parse — response may have no body (204, network cut, etc.)
   const text = await res.text();
@@ -57,11 +54,11 @@ async function request(method, path, body) {
   }
 
   if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
-  
+
   if (method === 'GET') {
     cache.set(cacheKey, { timestamp: Date.now(), data });
   }
-  
+
   return data;
 }
 

@@ -1,26 +1,26 @@
 require('dotenv').config();
 
-const express    = require('express');
-const cors       = require('cors');
-const path       = require('path');
-const multer     = require('multer');
-const fs         = require('fs');
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi    = require('swagger-ui-express');
-const sequelize  = require('./config/db');
+const swaggerUi = require('swagger-ui-express');
+const sequelize = require('./config/db');
 
-const authRoutes      = require('./routes/authRoutes');
-const userRoutes      = require('./routes/userRoutes');
-const pickupRoutes    = require('./routes/pickupRoutes');
-const rewardRoutes    = require('./routes/rewardRoutes');
-const impactRoutes    = require('./routes/impactRoutes');
-const articleRoutes   = require('./routes/articleRoutes');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const pickupRoutes = require('./routes/pickupRoutes');
+const rewardRoutes = require('./routes/rewardRoutes');
+const impactRoutes = require('./routes/impactRoutes');
+const articleRoutes = require('./routes/articleRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
-const categoryRoutes  = require('./routes/deviceCategoryRoutes');
+const categoryRoutes = require('./routes/deviceCategoryRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const errorMiddleware = require('./middleware/errorMiddleware');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Swagger setup ─────────────────────────────────────────────────────────────
@@ -53,26 +53,26 @@ const swaggerSpec = swaggerJsdoc({
           type: 'object',
           properties: {
             token: { type: 'string' },
-            user:  { type: 'object' },
+            user: { type: 'object' },
           },
         },
         RegisterRequest: {
           type: 'object',
           required: ['full_name', 'email', 'password'],
           properties: {
-            full_name: { type: 'string',  example: 'Srey Leak' },
-            email:     { type: 'string',  format: 'email', example: 'sreyleak@gmail.com' },
-            password:  { type: 'string',  example: 'mypassword123' },
-            phone:     { type: 'string',  example: '012345678' },
-            address:   { type: 'string',  example: 'House 12, St. 105, Daun Penh' },
-            city:      { type: 'string',  example: 'Phnom Penh' },
+            full_name: { type: 'string', example: 'Srey Leak' },
+            email: { type: 'string', format: 'email', example: 'sreyleak@gmail.com' },
+            password: { type: 'string', example: 'mypassword123' },
+            phone: { type: 'string', example: '012345678' },
+            address: { type: 'string', example: 'House 12, St. 105, Daun Penh' },
+            city: { type: 'string', example: 'Phnom Penh' },
           },
         },
         LoginRequest: {
           type: 'object',
           required: ['email', 'password'],
           properties: {
-            email:    { type: 'string', example: 'admin@staff.com' },
+            email: { type: 'string', example: 'admin@staff.com' },
             password: { type: 'string', example: '123' },
           },
         },
@@ -131,12 +131,12 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // }));
 
 // ── API Routes ────────────────────────────────────────────────────────────────
-app.use('/api/auth',      authRoutes);
-app.use('/api/users',     userRoutes);
-app.use('/api/pickups',   pickupRoutes);
-app.use('/api/rewards',   rewardRoutes);
-app.use('/api/impact',    impactRoutes);
-app.use('/api/articles',  articleRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/pickups', pickupRoutes);
+app.use('/api/rewards', rewardRoutes);
+app.use('/api/impact', impactRoutes);
+app.use('/api/articles', articleRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/notifications', notificationRoutes);
@@ -157,8 +157,8 @@ app.get('/api/health', (_req, res) =>
 app.get('/users', async (_req, res) => {
   const { User, PickupRequest, RewardTransaction } = require('./models');
 
-  const users              = await User.findAll();
-  const pickups            = await PickupRequest.findAll();
+  const users = await User.findAll();
+  const pickups = await PickupRequest.findAll();
   const rewardTransactions = await RewardTransaction.findAll();
 
   const userRows = users.map(u => `
@@ -232,7 +232,10 @@ app.use((_req, res) => res.status(404).json({ message: 'Route not found' }));
 app.use(errorMiddleware);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-sequelize.sync({ alter: true }).then(() => {
+// sync({ force: false }) only creates MISSING tables — it does NOT alter
+// existing columns (which is what made startup slow with alter: true).
+// If you need to change a column, write a migration instead.
+sequelize.sync({ force: false }).then(() => {
   app.listen(PORT, () => {
     console.log('');
     console.log('========================================================');

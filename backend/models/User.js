@@ -64,6 +64,7 @@ const User = sequelize.define('User', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
   indexes: [
+    { unique: true, fields: ['email'] },  // fast login/register lookups
     { fields: ['city'] },
     { fields: ['account_status'] },
   ],

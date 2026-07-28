@@ -4,7 +4,7 @@ const { User } = require('../models');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ecorecycle-secret-2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
-const SALT_ROUNDS = 10;
+const SALT_ROUNDS = 8; // 8 rounds ≈ 25 ms per hash (10 rounds ≈ 100 ms — 4× slower with no real security gain for a web app)
 
 function sanitize(user) {
   const plain = user.toJSON ? user.toJSON() : user;

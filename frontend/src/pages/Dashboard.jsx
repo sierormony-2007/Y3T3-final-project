@@ -29,7 +29,9 @@ function pickupSummary(p) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser]       = useState(JSON.parse(localStorage.getItem('currentUser')) || {});
+  // Seed from localStorage immediately so the page renders without a blank spinner
+  const cachedUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+  const [user, setUser]       = useState(cachedUser);
   const [pickups, setPickups] = useState([]);
   const [impact, setImpact]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,8 +39,6 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
-        const currentUserId = currentUser.user_id;
         const [me, myPickups, myImpact] = await Promise.all([
           api.auth.me(),
           api.pickups.list(),
@@ -47,11 +47,7 @@ export default function Dashboard() {
         setUser(me);
         localStorage.setItem('currentUser', JSON.stringify(me));
         const allPickups = Array.isArray(myPickups) ? myPickups : myPickups.pickups || [];
-        // Filter to only show the current user's pickups (guards against backend returning all)
-        const myOnly = currentUserId
-          ? allPickups.filter(p => p.user_id === currentUserId)
-          : allPickups;
-        setPickups(myOnly.map(pickupSummary));
+        setPickups(allPickups.map(pickupSummary));
         setImpact(myImpact);
       } catch (err) {
         console.error(err);
@@ -65,17 +61,9 @@ export default function Dashboard() {
     load();
   }, []);
 
+
   const activePickups = pickups.filter(p => p.status !== 'completed' && p.status !== 'cancelled').slice(0, 3);
   const recentActivity = pickups.slice(0, 3);
-
-  if (loading) return (
-    <div className="app-shell">
-      <Header user={user} />
-      <div className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: 'var(--text-secondary)' }}>Loading…</div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="app-shell">
